@@ -85,7 +85,7 @@ const skill_data = [
     },
     {
         "id": "heiron_metu",
-        "name": "ヘイロン",
+        "name": "ヘイロン滅",
         "selectorIndex": 12,
         "multiply": 8.0,
         "availabilSpecial": false
