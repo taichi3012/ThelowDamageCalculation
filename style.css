@@ -1,0 +1,24 @@
+h1{
+    margin: 0;
+    padding: 20px 0;
+    color: #000000;
+}
+.basicdamage{
+    position: fixed;
+    top: 90px;
+}
+.magicstone{
+    position: fixed;
+    top: 90px;
+    left: 197px;
+  }
+.othereffect{
+    position: fixed;
+    top: 90px;
+    left: 401px;
+  }
+.result{
+    position: fixed;
+    top: 90px;
+    left: 628px;
+  }

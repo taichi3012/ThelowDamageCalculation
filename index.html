@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<html>
+    <body>
+        <h1>Thelowダメージ計算</h1>
+
+        <div class="basicdamage">   
+            <input id="atkdmg" type="number" placeholder="武器の素ダメージ 例:300"><br>
+            <input id="specialdmg" type="number" placeholder="特攻値 例:50"><br>
+            <br>
+            <input id="park" type="number" value="140" placeholder="パーク(%) 例:140"><br>
+            <input id="job" type="number" placeholder="職業補正(%) 例:10"><br>
+            <input id="armor" type="number" placeholder="装備補正(%) 例:10"><br>
+            <br>
+            <select id="os_selector">
+                <!--scriptでOS(パーク)データを読み込み、追加-->
+            </select>
+            <input id="os_apply" type="button" value="OS値適用" onclick="applyOverStrength()">
+        </div>
+    
+        <div class="magicstone">
+            <label for="ms_1">特攻魔法石Level1</label>
+            <input id="ms_1" type="checkbox"><br>
+            <label for="ms_2">特攻魔法石Level2</label>
+            <input id="ms_2" type="checkbox"><br>
+            <label for="ms_3">特攻魔法石Level3</label>
+            <input id="ms_3" type="checkbox"><br>
+            <label for="ms_4">特攻魔法石Level4</label>
+            <input id="ms_4" type="checkbox"><br>
+            <label for="ms_4-5">特攻魔法石Level4.5</label>
+            <input id="ms_4-5" type="checkbox"><br>
+            <label for="ms_5">特攻魔法石Level5</label>
+            <input id="ms_5" type="checkbox">
+        </div>
+    
+        <div class="othereffect">
+            <select id="skill">
+                <!--scriptでスキルデータを読み込み、追加-->
+            </select><br>
+
+            <input id="streffect" type="number" placeholder="攻撃力上昇effectLv 例:5"><br>
+
+            <br>
+            <select id="legend_value">
+                <option value="0">0個</option>
+                <option value="1">1個</option>
+                <option value="2">2個</option>
+                <option value="3">3個</option>
+            </select><br>
+
+            <br>
+            <input type="button" id="calcubutton" value="攻撃力を入力してください" disabled="true" onclick="calcuDmg()">
+        </div>
+
+        <div class="result">
+            <p>----計算結果----</p>
+            <p>通常: <span id="result_normal"></span></p>
+            <p>クリティカル: <span id="result_critical"></span></p>
+        </div>
+
+        <script src="skilldata.js"></script>
+        <script src="parkdata.js"></script>
+        <script src="calcu.js"></script>
+    </body>
+</html>
