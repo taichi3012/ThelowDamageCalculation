@@ -46,7 +46,6 @@ for (let value = 1; value <= over_strength_values.length; value++) {
 
 function applyOverStrength() {
     let parkValue = over_strength_values[overStrengthSelector.selectedIndex];
-    console.log(overStrengthSelector.selectedIndex);
     let parkInput = document.getElementById("park");
     parkInput.value = parkValue; 
 }
