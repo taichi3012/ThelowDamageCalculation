@@ -1,0 +1,50 @@
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.hbox {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+.space-around {
+  justify-content: space-around;
+}
+
+.text-light {
+  color: #666;
+}
+
+.text-big {
+  font-size: 4em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.padding {
+  padding: 1em;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+.flex-grow-2 {
+  flex-grow: 2;
+}
+.flex-grow-3 {
+  flex-grow: 3;
+}
+
+.margin-1\/2em {
+  margin: 0.5em;
+}
