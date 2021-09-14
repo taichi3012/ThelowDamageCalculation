@@ -134,7 +134,7 @@ function calcuDmg() {
 		currentNormal += (nextNormal - currentNormal) / 2;
 		resultNormal.textContent = currentNormal.toFixed(3);
 
-		if (nextNormal - currentNormal < 0.0005) {
+		if (Math.abs(nextNormal - currentNormal) < 0.0005) {
 			clearInterval(animationTask.normal);
 		}
 	}, 50);
@@ -143,7 +143,7 @@ function calcuDmg() {
 		currentCritical += (nextCritical - currentCritical) / 2;
 		resultCritical.textContent = currentCritical.toFixed(3);
 
-		if (nextCritical - currentCritical < 0.0005) {
+		if (Math.abs(nextCritical - currentCritical) < 0.0005) {
 			clearInterval(animationTask.critical);
 		}
 	}, 50);
