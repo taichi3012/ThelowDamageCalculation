@@ -69,6 +69,10 @@ function applyOverStrength() {
 function calcuDmg() {
 	let weaponDamageInput = document.getElementById("weaponDamageInput");
 	if (weaponDamageInput.value === "") {
+		clearInterval(animationTask.normal);
+		clearInterval(animationTask.critical);
+		document.getElementById("resultDisplayNormal").textContent = 0;
+		document.getElementById("resultDisplayCritical").textContent = 0;
 		return;
 	}
 
