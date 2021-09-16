@@ -12,11 +12,11 @@
 				<div class="hbox space-around">
 					<div class="vbox">
 						<p class="text-light">通常</p>
-						<span class="text-big" id="result_normal">0</span>
+						<span class="text-big" id="resultDisplayNormal">0</span>
 					</div>
 					<div class="vbox">
 						<p class="text-light">クリティカル</p>
-						<span class="text-big" id="result_critical">0</span>
+						<span class="text-big" id="resultDisplayCritical">0</span>
 					</div>
 				</div>
 			</div>
@@ -24,32 +24,32 @@
 				<div class="basicdamage panel padding">
 					<h2>基本ダメージ</h2>
 					<section>
-						<label for="atkdmg">武器の素ダメージ</label>
-						<input id="atkdmg" type="number" placeholder="例:300" />
+						<label for="weaponDamageInput">武器の素ダメージ</label>
+						<input id="weaponDamageInput" type="number" placeholder="例:300" />
 					</section>
 					<section>
-						<label for="specialdmg">特攻値</label>
-						<input id="specialdmg" type="number" placeholder="例:50" />
+						<label for="specialDamageInput">特攻値</label>
+						<input id="specialDamageInput" type="number" placeholder="例:50" />
 					</section>
 					<section>
-						<label for="park">パーク(%)</label>
-						<input id="park" type="number" placeholder="例:140" />
+						<label for="parkGainInput">パーク(%)</label>
+						<input id="parkGainInput" type="number" placeholder="例:140" />
 					</section>
 					<section>
-						<label for="job">職業補正(%)</label>
-						<input id="job" type="number" placeholder="例:10" />
+						<label for="jobGainInput">職業補正(%)</label>
+						<input id="jobGainInput" type="number" placeholder="例:10" />
 					</section>
 					<section>
-						<label for="armor">装備補正(%)</label>
-						<input id="armor" type="number" placeholder="例:10" />
+						<label for="equipGainInput">装備補正(%)</label>
+						<input id="equipGainInput" type="number" placeholder="例:10" />
 					</section>
 					<section>
 						<label>オーバーストレンジ</label>
 						<div class="hbox">
-							<select id="os_selector" class="flex-grow-3">
+							<select id="OSParkSelector" class="flex-grow-3">
 								<!--scriptでOS(パーク)データを読み込み、追加-->
 							</select>
-							<input class="flex-grow-1" id="os_apply" type="button" value="OS値適用" onclick="applyOverStrength()" />
+							<input class="flex-grow-1" id="OSParkApply" type="button" value="OS値適用" onclick="applyOverStrength()" />
 						</div>
 					</section>
 				</div>
@@ -57,8 +57,8 @@
 					<div class="magicstone padding vbox">
 						<h2>魔法石</h2>
 						<section class="vbox margin-1/2em">
-							<label for="legend_value">レジェンド魔法石個数</label>
-							<select id="legend_value">
+							<label for="legendValueSelector">レジェンド魔法石個数</label>
+							<select id="legendValueSelector">
 								<option value="0">0個</option>
 								<option value="1">1個</option>
 								<option value="2">2個</option>
@@ -66,42 +66,42 @@
 							</select>
 						</section>
 						<section>
-							<input id="ms_1" type="checkbox" />
-							<label for="ms_1">特攻魔法石Level1</label>
+							<input id="magicStone1CheckBox" type="checkbox" />
+							<label for="magicStone1CheckBox">特攻魔法石Level1</label>
 						</section>
 						<section>
-							<input id="ms_2" type="checkbox" />
-							<label for="ms_2">特攻魔法石Level2</label>
+							<input id="magicStone2CheckBox" type="checkbox" />
+							<label for="magicStone2CheckBox">特攻魔法石Level2</label>
 						</section>
 						<section>
-							<input id="ms_3" type="checkbox" />
-							<label for="ms_3">特攻魔法石Level3</label>
+							<input id="magicStone3CheckBox" type="checkbox" />
+							<label for="magicStone3CheckBox">特攻魔法石Level3</label>
 						</section>
 						<section>
-							<input id="ms_4" type="checkbox" />
-							<label for="ms_4">特攻魔法石Level4</label>
+							<input id="magicStone4CheckBox" type="checkbox" />
+							<label for="magicStone4CheckBox">特攻魔法石Level4</label>
 						</section>
 						<section>
-							<input id="ms_4-5" type="checkbox" />
-							<label for="ms_4-5">特攻魔法石Level4.5</label>
+							<input id="magicStone4_5CheckBox" type="checkbox" />
+							<label for="magicStone4_5CheckBox">特攻魔法石Level4.5</label>
 						</section>
 						<section>
-							<input id="ms_5" type="checkbox" />
-							<label for="ms_5">特攻魔法石Level5</label>
+							<input id="magicStone5CheckBox" type="checkbox" />
+							<label for="magicStone5CheckBox">特攻魔法石Level5</label>
 						</section>
 					</div>
 					<div class="othereffect">
 						<h2>その他</h2>
 						<section>
-							<label for="skill">スキル</label>
-							<select id="skill">
+							<label for="skillSelector">スキル</label>
+							<select id="skillSelector">
 								<!--scriptでスキルデータを読み込み、追加-->
 							</select>
 						</section>
 
 						<section>
-							<label for="streffect">攻撃力上昇エフェクトLv</label>
-							<input id="streffect" type="number" placeholder="例:5" />
+							<label for="strengthEffectInput">攻撃力上昇エフェクトLv</label>
+							<input id="strengthEffectInput" type="number" placeholder="例:5" />
 						</section>
 						<!-- 
 						<input

@@ -5,7 +5,7 @@ window.addEventListener("load", () => {
 				node.addEventListener("input", calcuDmg);
 				break;
 			case "SELECT":
-				if (node.id !== "os_selector") {
+				if (node.id !== "OSParkSelector") {
 					node.addEventListener("change", calcuDmg);
 				}
 				break;
@@ -25,7 +25,7 @@ let skillData = skill_data.sort((a, b) => {
 	if (Number(a.selectorIndex) > Number(b.selectorIndex)) return 1;
 	return 0;
 });
-let skillSelector = document.getElementById("skill");
+const skillSelector = document.getElementById("skillSelector");
 
 const animationTask = {
 	normal: 0,
@@ -49,7 +49,7 @@ for (const data of skillData) {
 	console.log("\n[SkillResister]  ID:" + data.id + "  Name:" + data.name + " Registered!");
 }
 
-let overStrengthSelector = document.getElementById("os_selector");
+const overStrengthSelector = document.getElementById("OSParkSelector");
 
 for (let value = 1; value <= over_strength_values.length; value++) {
 	let option = document.createElement("option");
@@ -60,44 +60,43 @@ for (let value = 1; value <= over_strength_values.length; value++) {
 
 function applyOverStrength() {
 	let parkValue = over_strength_values[overStrengthSelector.selectedIndex];
-	let parkInput = document.getElementById("park");
+	let parkInput = document.getElementById("parkGainInput");
 	parkInput.value = parkValue;
 
 	calcuDmg();
 }
 
 function calcuDmg() {
-	let weaponDmg = document.getElementById("atkdmg");
-	if (weaponDmg.value === "") {
+	let weaponDamageInput = document.getElementById("weaponDamageInput");
+	if (weaponDamageInput.value === "") {
 		return;
 	}
 
-	let specialDmg = document.getElementById("specialdmg");
-	let park = document.getElementById("park");
-	let job = document.getElementById("job");
-	let armor = document.getElementById("armor");
-	let magicStone = new Map()
-		.set("1", document.getElementById("ms_1"))
-		.set("2", document.getElementById("ms_2"))
-		.set("3", document.getElementById("ms_3"))
-		.set("4", document.getElementById("ms_4"))
-		.set("4.5", document.getElementById("ms_4-5"))
-		.set("5", document.getElementById("ms_5"));
-	let skill = document.getElementById("skill");
-	let skillSelectedValue = skill.options[skill.selectedIndex].value;
-	let selectedSkillMap = skillIdFrom.get(skillSelectedValue);
-	let strEffct = document.getElementById("streffect");
-	let legend = document.getElementById("legend_value");
+	const specialDamageInput = document.getElementById("specialDamageInput");
+	const parkGainInput = document.getElementById("parkGainInput");
+	const jobGainInput = document.getElementById("jobGainInput");
+	const equipGainInput = document.getElementById("equipGainInput");
+	const magicStoneInputMap = new Map()
+		.set("1", document.getElementById("magicStone1CheckBox"))
+		.set("2", document.getElementById("magicStone2CheckBox"))
+		.set("3", document.getElementById("magicStone3CheckBox"))
+		.set("4", document.getElementById("magicStone4CheckBox"))
+		.set("4.5", document.getElementById("magicStone4_5CheckBox"))
+		.set("5", document.getElementById("magicStone5CheckBox"));
+	const skillInput = document.getElementById("skillSelector");
+	const selectedSkillMap = skillIdFrom.get(skillInput.options[skillInput.selectedIndex].value);
+	const strengthEffectInput = document.getElementById("strengthEffectInput");
+	const legendValueInput = document.getElementById("legendValueSelector");
 
-	let result = Number(weaponDmg.value);
+	let result = Number(weaponDamageInput.value);
 	if (selectedSkillMap.get("availabilSpecial")) {
-		result += Number(specialDmg.value);
+		result += Number(specialDamageInput.value);
 	}
 
-	let multiplyDmg = (100 + Number(park.value) + Number(job.value) + Number(armor.value)) / 100;
-	magicStone.forEach((v, k) => {
+	let damageMultioly = (100 + Number(parkGainInput.value) + Number(jobGainInput.value) + Number(equipGainInput.value)) / 100;
+	magicStoneInputMap.forEach((v, k) => {
 		if (v.checked) {
-			multiplyDmg *=
+			damageMultioly *=
 				k === "1"
 					? 1.1
 					: k === "2"
@@ -113,19 +112,19 @@ function calcuDmg() {
 					: 1;
 		}
 	});
-	multiplyDmg *= selectedSkillMap.get("multiply");
-	multiplyDmg *= strEffct.value ? 1 + 0.2 * Number(strEffct.value) : 1;
-	multiplyDmg *= 1.06 ** Number(legend.value);
-	result *= multiplyDmg;
+	damageMultioly *= selectedSkillMap.get("multiply");
+	damageMultioly *= strengthEffectInput.value ? 1 + 0.2 * Number(strengthEffectInput.value) : 1;
+	damageMultioly *= 1.06 ** Number(legendValueInput.value);
+	result *= damageMultioly;
 
 	clearInterval(animationTask.normal);
 	clearInterval(animationTask.critical);
 
-	const resultNormal = document.getElementById("result_normal");
-	const resultCritical = document.getElementById("result_critical");
+	const resultNormal = document.getElementById("resultDisplayNormal");
+	const resultCritical = document.getElementById("resultDisplayCritical");
 
-	let currentNormal = Number(document.getElementById("result_normal").textContent);
-	let currentCritical = Number(document.getElementById("result_critical").textContent);
+	let currentNormal = Number(document.getElementById("resultDisplayNormal").textContent);
+	let currentCritical = Number(document.getElementById("resultDisplayCritical").textContent);
 
 	const nextNormal = Math.floor(result * 1000) / 1000;
 	const nextCritical = Math.floor(result * 1.15 * 1000) / 1000;
