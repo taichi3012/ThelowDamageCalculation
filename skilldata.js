@@ -49,44 +49,51 @@ const skill_data = [
         "availabilSpecial": false
     },
     {
+        "id": "chaos_blizzard",
+        "name": "カオスブリザード(全弾Hit)",
+        "selectorIndex": 7,
+        "multiply": 7.0,
+        "availabilSpecial": true
+    },
+    {
         "id": "snow_pillar",
         "name": "雪柱",
-        "selectorIndex": 7,
+        "selectorIndex": 8,
         "multiply": 4.0,
         "availabilSpecial": false
     },
     {
         "id": "over_shoot_shadow_power",
         "name": "オーバーシュート(スキルあり)",
-        "selectorIndex": 8,
+        "selectorIndex": 9,
         "multiply": 18.75,
         "availabilSpecial": false
     },
     {
         "id": "over_shoot_normal",
         "name": "オーバーシュート(スキルなし)",
-        "selectorIndex": 9,
+        "selectorIndex": 10,
         "multiply": 12.5,
         "availabilSpecial": false
     },
     {
         "id": "awakening",
         "name": "覚醒",
-        "selectorIndex": 10,
+        "selectorIndex": 11,
         "multiply": 2.0,
         "availabilSpecial": true
     },
     {
         "id": "blood_slash",
         "name": "血の斬撃",
-        "selectorIndex": 11,
+        "selectorIndex": 12,
         "multiply": 2.5,
         "availabilSpecial": true
     },
     {
         "id": "heiron_metu",
         "name": "ヘイロン滅",
-        "selectorIndex": 12,
+        "selectorIndex": 13,
         "multiply": 8.0,
         "availabilSpecial": false
     }
