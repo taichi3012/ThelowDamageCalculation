@@ -49,7 +49,7 @@ for (const data of skillData) {
 	console.log("\n[SkillResister]  ID:" + data.id + "  Name:" + data.name + " Registered!");
 }
 
-const overStrengthSelector = document.getElementById("OSParkSelector");
+const overStrengthSelector = document.getElementById("parkStageSelector");
 
 for (let value = 1; value <= over_strength_values.length; value++) {
 	let option = document.createElement("option");
@@ -67,7 +67,7 @@ function applyOverStrength() {
 }
 
 function calcuDmg() {
-	let weaponDamageInput = document.getElementById("weaponDamageInput");
+	const weaponDamageInput = document.getElementById("weaponDamageInput");
 	if (weaponDamageInput.value === "") {
 		clearInterval(animationTask.normal);
 		clearInterval(animationTask.critical);
