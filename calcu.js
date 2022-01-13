@@ -270,7 +270,6 @@ function updateURL() {
 			case "magicStone4CheckBox":
 			case "magicStone4_5CheckBox":
 			case "magicStone5CheckBox":
-				console.log("magic");
 				let checked = document.getElementById(elementId).checked;
 				if (checked == true) {
 					url.searchParams.set(getParamId(elementId), checked);
@@ -282,7 +281,7 @@ function updateURL() {
 				break;
 			default:
 		}
-
-		history.pushState({}, "", url);
 	}
+	console.log(url.href);
+	history.pushState({}, "", url);
 }
