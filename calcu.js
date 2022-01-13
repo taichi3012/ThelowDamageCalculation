@@ -3,11 +3,13 @@ window.addEventListener("load", () => {
 		switch (node.tagName) {
 			case "INPUT":
 				node.addEventListener("input", calcuDmg);
+				node.addEventListener("input", updateURL);
 				break;
 			case "SELECT":
 				if (node.id !== "OSParkSelector") {
 					node.addEventListener("change", calcuDmg);
 				}
+				node.addEventListener("change", updateURL);
 				break;
 			default:
 				for (const child of Array.from(node.children)) {
@@ -56,6 +58,95 @@ for (let value = 1; value <= over_strength_values.length; value++) {
 	option.text = value.toString();
 	option.value = value.toString();
 	overStrengthSelector.appendChild(option);
+}
+
+const elementIdByParamId = new Map()
+.set("defaultDamage", "weaponDamageInput")
+.set("specialDamage", "specialDamageInput")
+.set("parkGain", "parkGainInput")
+.set("jobGain", "jobGainInput")
+.set("equipGain", "equipGainInput")
+.set("strengthEffectLevel", "strengthEffectInput")
+.set("legendValue", "legendValueSelector")
+.set("MSLv1", "magicStone1CheckBox")
+.set("MSLv2", "magicStone2CheckBox")
+.set("MSLv3", "magicStone3CheckBox")
+.set("MSLv4", "magicStone4CheckBox")
+.set("MSLv4_5", "magicStone4_5CheckBox")
+.set("MSLv5", "magicStone5CheckBox")
+.set("skillId", "skillSelector");
+
+function getElementId(paramId) {
+	return elementIdByParamId.get(paramId);
+}
+
+function getParamId(elementId) {
+	for (let key of elementIdByParamId.keys()) {
+		if (elementIdByParamId.get(key) == elementId) {
+			return key;
+		}
+	}
+	return null;
+}
+
+//パラメーターの適用
+if(location.search.substring(1)) {
+	var paramMap = new Map();
+
+	const param = location.search.substring(1).split("&");
+
+	for (i = 0; i < param.length; i++) {
+		var array = param[i].split("=");
+		var elementId = getElementId(array[0]);
+		if (!elementId) {
+			continue;
+		}
+
+		switch(elementId) {
+			case "weaponDamageInput":
+			case "specialDamageInput":
+			case "parkGainInput":
+			case "jobGainInput":
+			case "equipGainInput":
+			case "strengthEffectInput":
+				document.getElementById(elementId).value = Number(array[1]);
+				console.log("Value of " + elementId + " is apply!");
+				break;
+			case "legendValueSelector":
+				var val = Math.floor(Number(array[1]));
+				if (0 <= val && val <= 3) {
+					document.getElementById(elementId).selectedIndex = val;
+					console.log("Value of " + elementId + " is apply!");
+				}
+				break;
+			case "magicStone1CheckBox":
+			case "magicStone2CheckBox":
+			case "magicStone3CheckBox":
+			case "magicStone4CheckBox":
+			case "magicStone4_5CheckBox":
+			case "magicStone5CheckBox":
+				var str = array[1];
+				if (str == "0") {
+					document.getElementById(elementId).checked = false;
+					console.log("Value of " + elementId + " is apply!");
+				}
+				if (str == "1") {
+					document.getElementById(elementId).checked = true;
+					console.log("Value of " + elementId + " is apply!");
+				}
+				break;
+			case "skillSelector":
+				var skillId = array[1];
+				if (skillIdFrom.get(skillId)) {
+					document.getElementById(elementId).selectedIndex = skillIdFrom.get(skillId).get("selectorIndex");
+					console.log("Value of " + elementId + " is apply!");
+				}
+				break;
+			default:
+		}
+	}
+
+	calcuDmg();
 }
 
 function applyOverStrength() {
@@ -150,4 +241,48 @@ function calcuDmg() {
 			clearInterval(animationTask.critical);
 		}
 	}, 50);
+}
+
+function updateURL() {
+	const url = new URL(window.location);
+	for (let elementId of elementIdByParamId.values()) {
+		switch(elementId) {
+			case "weaponDamageInput":
+			case "specialDamageInput":
+			case "parkGainInput":
+			case "jobGainInput":
+			case "equipGainInput":
+			case "strengthEffectInput":
+				let value = document.getElementById(elementId).value;
+				if (value) {
+					url.searchParams.set(getParamId(elementId), value);
+				}
+				break;
+			case "legendValueSelector":
+				let legendIndex = document.getElementById(elementId).selectedIndex;
+				if (legendIndex) {
+					url.searchParams.set(getParamId(elementId), legendIndex);
+				}
+				break;
+			case "magicStone1CheckBox":
+			case "magicStone2CheckBox":
+			case "magicStone3CheckBox":
+			case "magicStone4CheckBox":
+			case "magicStone4_5CheckBox":
+			case "magicStone5CheckBox":
+				console.log("magic");
+				let checked = document.getElementById(elementId).checked;
+				if (checked == true) {
+					url.searchParams.set(getParamId(elementId), checked);
+				}
+				break;
+			case "skillSelector":
+				let skillIndex = document.getElementById(elementId).selectedIndex;
+				url.searchParams.set(getParamId(elementId), skillData[Number(skillIndex)].id);
+				break;
+			default:
+		}
+
+		history.pushState({}, "", url);
+	}
 }
