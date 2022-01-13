@@ -126,11 +126,11 @@ if(location.search.substring(1)) {
 			case "magicStone4_5CheckBox":
 			case "magicStone5CheckBox":
 				var str = array[1];
-				if (str == "0") {
+				if (str == "false") {
 					document.getElementById(elementId).checked = false;
 					console.log("Value of " + elementId + " is apply!");
 				}
-				if (str == "1") {
+				if (str == "true") {
 					document.getElementById(elementId).checked = true;
 					console.log("Value of " + elementId + " is apply!");
 				}
