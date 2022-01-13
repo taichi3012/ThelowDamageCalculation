@@ -110,13 +110,13 @@ if(location.search.substring(1)) {
 			case "equipGainInput":
 			case "strengthEffectInput":
 				document.getElementById(elementId).value = Number(array[1]);
-				console.log("Value of " + elementId + " is apply!");
+				console.log("[Parameter]  Value of " + elementId + " is apply!");
 				break;
 			case "legendValueSelector":
 				var val = Math.floor(Number(array[1]));
 				if (0 <= val && val <= 3) {
 					document.getElementById(elementId).selectedIndex = val;
-					console.log("Value of " + elementId + " is apply!");
+					console.log("[Parameter]  Value of " + elementId + " is apply!");
 				}
 				break;
 			case "magicStone1CheckBox":
@@ -128,18 +128,18 @@ if(location.search.substring(1)) {
 				var str = array[1];
 				if (str == "false") {
 					document.getElementById(elementId).checked = false;
-					console.log("Value of " + elementId + " is apply!");
+					console.log("[Parameter]  Value of " + elementId + " is apply!");
 				}
 				if (str == "true") {
 					document.getElementById(elementId).checked = true;
-					console.log("Value of " + elementId + " is apply!");
+					console.log("[Parameter]  Value of " + elementId + " is apply!");
 				}
 				break;
 			case "skillSelector":
 				var skillId = array[1];
 				if (skillIdFrom.get(skillId)) {
 					document.getElementById(elementId).selectedIndex = skillIdFrom.get(skillId).get("selectorIndex");
-					console.log("Value of " + elementId + " is apply!");
+					console.log("[Parameter]  Value of " + elementId + " is apply!");
 				}
 				break;
 			default:
@@ -245,6 +245,7 @@ function calcuDmg() {
 
 function updateURL() {
 	const url = new URL(window.location);
+
 	for (let elementId of elementIdByParamId.values()) {
 		switch(elementId) {
 			case "weaponDamageInput":
@@ -256,12 +257,16 @@ function updateURL() {
 				let value = document.getElementById(elementId).value;
 				if (value) {
 					url.searchParams.set(getParamId(elementId), value);
+				} else {
+					url.searchParams.delete(getParamId(elementId));
 				}
 				break;
 			case "legendValueSelector":
 				let legendIndex = document.getElementById(elementId).selectedIndex;
 				if (legendIndex) {
 					url.searchParams.set(getParamId(elementId), legendIndex);
+				} else {
+					url.searchParams.delete(getParamId(elementId));
 				}
 				break;
 			case "magicStone1CheckBox":
@@ -273,15 +278,21 @@ function updateURL() {
 				let checked = document.getElementById(elementId).checked;
 				if (checked == true) {
 					url.searchParams.set(getParamId(elementId), checked);
+				} else {
+					url.searchParams.delete(getParamId(elementId));
 				}
 				break;
 			case "skillSelector":
 				let skillIndex = document.getElementById(elementId).selectedIndex;
-				url.searchParams.set(getParamId(elementId), skillData[Number(skillIndex)].id);
+				if (skillIndex != "0") {
+					url.searchParams.set(getParamId(elementId), skillData[Number(skillIndex)].id);
+				} else {
+					url.searchParams.delete(getParamId(elementId));
+				}
 				break;
 			default:
 		}
 	}
-	console.log(url.href);
+
 	history.pushState({}, "", url);
 }
