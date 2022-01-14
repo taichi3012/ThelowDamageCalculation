@@ -3,13 +3,11 @@ window.addEventListener("load", () => {
 		switch (node.tagName) {
 			case "INPUT":
 				node.addEventListener("input", calcuDmg);
-				node.addEventListener("input", updateURL);
 				break;
 			case "SELECT":
 				if (node.id !== "OSParkSelector") {
 					node.addEventListener("change", calcuDmg);
 				}
-				node.addEventListener("change", updateURL);
 				break;
 			default:
 				for (const child of Array.from(node.children)) {
@@ -241,9 +239,10 @@ function calcuDmg() {
 			clearInterval(animationTask.critical);
 		}
 	}, 50);
+	updateURLParameter();
 }
 
-function updateURL() {
+function updateURLParameter() {
 	const url = new URL(window.location);
 
 	for (let elementId of elementIdByParamId.values()) {
