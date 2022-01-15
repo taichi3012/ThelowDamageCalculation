@@ -17,6 +17,8 @@ window.addEventListener("load", () => {
 		}
 	};
 	registerListener(document.body);
+
+	applyTheme();
 });
 
 let skillIdFrom = new Map();
@@ -59,20 +61,20 @@ for (let value = 1; value <= over_strength_values.length; value++) {
 }
 
 const elementIdByParamId = new Map()
-.set("defaultDamage", "weaponDamageInput")
-.set("specialDamage", "specialDamageInput")
-.set("parkGain", "parkGainInput")
-.set("jobGain", "jobGainInput")
-.set("equipGain", "equipGainInput")
-.set("strengthEffectLevel", "strengthEffectInput")
-.set("legendValue", "legendValueSelector")
-.set("MSLv1", "magicStone1CheckBox")
-.set("MSLv2", "magicStone2CheckBox")
-.set("MSLv3", "magicStone3CheckBox")
-.set("MSLv4", "magicStone4CheckBox")
-.set("MSLv4_5", "magicStone4_5CheckBox")
-.set("MSLv5", "magicStone5CheckBox")
-.set("skillId", "skillSelector");
+	.set("defaultDamage", "weaponDamageInput")
+	.set("specialDamage", "specialDamageInput")
+	.set("parkGain", "parkGainInput")
+	.set("jobGain", "jobGainInput")
+	.set("equipGain", "equipGainInput")
+	.set("strengthEffectLevel", "strengthEffectInput")
+	.set("legendValue", "legendValueSelector")
+	.set("MSLv1", "magicStone1CheckBox")
+	.set("MSLv2", "magicStone2CheckBox")
+	.set("MSLv3", "magicStone3CheckBox")
+	.set("MSLv4", "magicStone4CheckBox")
+	.set("MSLv4_5", "magicStone4_5CheckBox")
+	.set("MSLv5", "magicStone5CheckBox")
+	.set("skillId", "skillSelector");
 
 function getElementId(paramId) {
 	return elementIdByParamId.get(paramId);
@@ -88,7 +90,7 @@ function getParamId(elementId) {
 }
 
 //パラメーターの適用
-if(location.search.substring(1)) {
+if (location.search.substring(1)) {
 	var paramMap = new Map();
 
 	const param = location.search.substring(1).split("&");
@@ -100,7 +102,7 @@ if(location.search.substring(1)) {
 			continue;
 		}
 
-		switch(elementId) {
+		switch (elementId) {
 			case "weaponDamageInput":
 			case "specialDamageInput":
 			case "parkGainInput":
@@ -186,7 +188,8 @@ function calcuDmg() {
 		result += Number(specialDamageInput.value);
 	}
 
-	let damageMultioly = (100 + Number(parkGainInput.value) + Number(jobGainInput.value) + Number(equipGainInput.value)) / 100;
+	let damageMultioly =
+		(100 + Number(parkGainInput.value) + Number(jobGainInput.value) + Number(equipGainInput.value)) / 100;
 	magicStoneInputMap.forEach((v, k) => {
 		if (v.checked) {
 			damageMultioly *=
@@ -246,7 +249,7 @@ function updateURLParameter() {
 	const url = new URL(window.location);
 
 	for (let elementId of elementIdByParamId.values()) {
-		switch(elementId) {
+		switch (elementId) {
 			case "weaponDamageInput":
 			case "specialDamageInput":
 			case "parkGainInput":
@@ -294,4 +297,26 @@ function updateURLParameter() {
 	}
 
 	history.pushState({}, "", url);
+}
+
+function toggleDarkMode() {
+	const darkMode = !(localStorage.getItem("dark_mode") == "true");
+	localStorage.setItem("dark_mode", darkMode);
+
+	applyTheme();
+}
+
+function applyTheme() {
+	const darkMode = localStorage.getItem("dark_mode") == "true";
+
+	//Apply theme icon
+	const e = document.querySelector("#switch-theme");
+	e.innerHTML = darkMode ? "&#xE518;" : "&#xE51C;";
+
+	//Apply theme attribute
+	if (darkMode) {
+		document.documentElement.setAttribute("theme", "dark");
+	} else {
+		document.documentElement.removeAttribute("theme");
+	}
 }

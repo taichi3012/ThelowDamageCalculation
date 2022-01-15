@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <meta charset="UTF-8" />
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="util.css" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <title>TheLowダメージ計算</title>
 <html>
 	<body>
@@ -11,11 +11,11 @@
 			<div class="result vbox padding">
 				<div class="hbox space-around">
 					<div class="vbox">
-						<p class="text-light">通常</p>
+						<h4>通常</h4>
 						<span class="text-big" id="resultDisplayNormal">0</span>
 					</div>
 					<div class="vbox">
-						<p class="text-light">クリティカル</p>
+						<h4>クリティカル</h4>
 						<span class="text-big" id="resultDisplayCritical">0</span>
 					</div>
 				</div>
@@ -49,7 +49,13 @@
 							<select id="parkStageSelector" class="flex-grow-3">
 								<!--scriptでOS(パーク)データを読み込み、追加-->
 							</select>
-							<input class="flex-grow-1" id="OSParkApply" type="button" value="OS値適用" onclick="applyOverStrength()" />
+							<input
+								class="flex-grow-1"
+								id="OSParkApply"
+								type="button"
+								value="OS値適用"
+								onclick="applyOverStrength()"
+							/>
 						</div>
 					</section>
 				</div>
@@ -116,6 +122,7 @@
 				</div>
 			</div>
 			<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
+			<span id="switch-theme" class="material-icons" onclick="toggleDarkMode()"></span>
 		</div>
 		<script src="skilldata.js"></script>
 		<script src="parkdata.js"></script>

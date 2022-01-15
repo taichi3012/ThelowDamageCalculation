@@ -15,12 +15,9 @@
 .align-center {
   align-items: center;
 }
+
 .space-around {
   justify-content: space-around;
-}
-
-.text-light {
-  color: #666;
 }
 
 .text-big {
@@ -38,9 +35,11 @@
 .flex-grow-1 {
   flex-grow: 1;
 }
+
 .flex-grow-2 {
   flex-grow: 2;
 }
+
 .flex-grow-3 {
   flex-grow: 3;
 }
