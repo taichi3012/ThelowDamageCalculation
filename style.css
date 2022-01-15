@@ -1,6 +1,22 @@
+:root {
+  --bg-main: #fff;
+  --bg-sub: #fff;
+  --text-main: #222;
+  --text-sub: #666;
+}
+
+:root[theme="dark"] {
+  transition: 1s;
+  --bg-main: #333;
+  --bg-sub: #666;
+  --text-main: #fff;
+  --text-sub: #aaa;
+}
+
 html,
 body {
-  background-color: #fff;
+  color: var(--text-main);
+  background-color: var(--bg-main);
   margin: 0;
   font-family: Arial, Helvetica, "游ゴシック", "メイリオ";
   font-weight: 600;
@@ -38,20 +54,33 @@ body {
   text-align: center;
 }
 
+#switch-theme {
+  color: var(--text-main);
+  user-select: none;
+  position: absolute;
+  cursor: pointer;
+  top: 1em;
+  right: 1em;
+}
+
 input[type="number"] {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
   font: inherit;
   padding: 0.3em 0.6em;
   margin: 0.2em;
-  border: 2px solid #333;
   border-radius: 0.4em;
   outline: none;
 }
 
 input[type="button"] {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
   font: inherit;
   padding: 0.3em 0.6em;
   margin: 0.2em;
-  border: 2px solid #333;
   border-radius: 0.4em;
   outline: none;
 }
@@ -86,10 +115,12 @@ input[type=checkbox]:checked+label::before {
 }
 
 select {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
   font: inherit;
   padding: 0.3em 0.6em;
   margin: 0.2em;
-  border: 2px solid #333;
   border-radius: 0.4em;
   outline: none;
 }
@@ -100,5 +131,9 @@ h1 {
 
 h2 {
   margin-bottom: 0.2em;
-  border-bottom: 2px solid #aaa;
+  border-bottom: 2px solid var(--text-sub);
+}
+
+h4 {
+  color: var(--text-sub)
 }
