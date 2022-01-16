@@ -1,0 +1,191 @@
+<script>
+	export let skill_data;
+	export let over_strength_values;
+
+	let weaponDamage = "";
+	let specialDamage = "";
+	let parkGain = "";
+	let jobGain = "";
+	let equipGain = "";
+	let overStrength = "0";
+	let numLegendStone = "0";
+	let magicStone = {
+		level_1: false,
+		level_2: false,
+		level_3: false,
+		level_4: false,
+		"level_4.5": false,
+		level_5: false,
+	};
+
+	let skill = "general_attack";
+	let strengthEffectLevel = 0;
+
+	let result = {
+		normal: 0,
+		critical: 0,
+	};
+
+	let magicStoneScales = {
+		level_1: 1.1,
+		level_2: 1.15,
+		level_3: 1.23,
+		level_4: 1.35,
+		"level_4.5": 1.4,
+		level_5: 1.55,
+	};
+
+	$: {
+		let normal = Number(weaponDamage);
+		if (skill_data[skill].availabilSpecial) {
+			normal += specialDamage;
+		}
+
+		let scale = (100 + parkGain + jobGain + equipGain) / 100;
+
+		for (const key of Object.keys(magicStone)) {
+			if (magicStone[key]) {
+				scale *= magicStoneScales[key];
+			}
+		}
+
+		scale *= skill_data[skill].multiply;
+		scale *= strengthEffectLevel ? 1 + 0.2 * Number(strengthEffectLevel) : 1;
+		scale *= 1.06 ** Number(numLegendStone);
+
+		result.normal = normal * scale;
+	}
+
+	function applyOverStrength() {
+		console.log(overStrength);
+		parkGain = over_strength_values[Number(overStrength)];
+	}
+</script>
+
+<main>
+	<div class="container vbox">
+		<h1>Thelowダメージ計算</h1>
+		<div class="result vbox padding">
+			<div class="hbox space-around">
+				<div class="vbox">
+					<h4>通常</h4>
+					<span class="text-big">{result.normal.toFixed(2)}</span>
+				</div>
+				<div class="vbox">
+					<h4>クリティカル</h4>
+					<span class="text-big">{result.critical.toFixed(2)}</span>
+				</div>
+			</div>
+		</div>
+		<div class="hbox space-around">
+			<div class="basicdamage panel padding">
+				<h2>基本ダメージ</h2>
+				<section>
+					<label for="weaponDamageInput">武器の素ダメージ</label>
+					<input type="number" placeholder="例:300" bind:value={weaponDamage} />
+				</section>
+				<section>
+					<label for="specialDamageInput">特攻値</label>
+					<input type="number" placeholder="例:50" bind:value={specialDamage} />
+				</section>
+				<section>
+					<label for="jobGainInput">職業補正(%)</label>
+					<input type="number" placeholder="例:10" bind:value={jobGain} />
+				</section>
+				<section>
+					<label for="equipGainInput">装備補正(%)</label>
+					<input type="number" placeholder="例:10" bind:value={equipGain} />
+				</section>
+				<section>
+					<label for="parkGainInput">パーク(%)</label>
+					<input type="number" placeholder="例:140" bind:value={parkGain} />
+				</section>
+				<section>
+					<span>オーバーストレンジ</span>
+					<div class="hbox">
+						<select class="flex-grow-3" bind:value={overStrength}>
+							{#each over_strength_values as _, i}
+								<option value={`${i}`}>{i}</option>
+							{/each}
+						</select>
+						<input class="flex-grow-1" type="button" value="OS値適用" on:click={applyOverStrength} />
+					</div>
+				</section>
+			</div>
+			<div class="vbox panel">
+				<div class="magicstone padding vbox">
+					<h2>魔法石</h2>
+					<section class="vbox margin-1/2em">
+						<label for="legendValueSelector">レジェンド魔法石個数</label>
+						<select bind:value={numLegendStone}>
+							<option value="0">0個</option>
+							<option value="1">1個</option>
+							<option value="2">2個</option>
+							<option value="3">3個</option>
+						</select>
+					</section>
+					<section>
+						<input id="ms1" type="checkbox" bind:checked={magicStone["level_1"]} />
+						<label for="ms1">特攻魔法石Level1</label>
+					</section>
+					<section>
+						<input id="ms2" type="checkbox" bind:checked={magicStone["level_2"]} />
+						<label for="ms2">特攻魔法石Level2</label>
+					</section>
+					<section>
+						<input id="ms3" type="checkbox" bind:checked={magicStone["level_3"]} />
+						<label for="ms3">特攻魔法石Level3</label>
+					</section>
+					<section>
+						<input id="ms4" type="checkbox" bind:checked={magicStone["level_4"]} />
+						<label for="ms4">特攻魔法石Level4</label>
+					</section>
+					<section>
+						<input id="ms4.5" type="checkbox" bind:checked={magicStone["level_4.5"]} />
+						<label for="ms4.5">特攻魔法石Level4.5</label>
+					</section>
+					<section>
+						<input id="ms5" type="checkbox" bind:checked={magicStone["level_5"]} />
+						<label for="ms5">特攻魔法石Level5 or Legend</label>
+					</section>
+				</div>
+				<div class="othereffect">
+					<h2>その他</h2>
+					<section>
+						<label for="skillSelector">スキル</label>
+						<select bind:value={skill}>
+							{#each Object.keys(skill_data) as id}
+								<option value={id}>{skill_data[id].name}</option>
+							{/each}
+						</select>
+					</section>
+					<section>
+						<label for="strengthEffectInput">攻撃力上昇エフェクトLv</label>
+						<input type="number" placeholder="例:5" bind:value={strengthEffectLevel} />
+					</section>
+				</div>
+			</div>
+		</div>
+		<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
+	</div>
+</main>
+
+<style>
+	main {
+		text-align: center;
+		padding: 1em;
+		max-width: 240px;
+		margin: 0 auto;
+	}
+	h1 {
+		color: #ff3e00;
+		text-transform: uppercase;
+		font-size: 4em;
+		font-weight: 100;
+	}
+	@media (min-width: 640px) {
+		main {
+			max-width: none;
+		}
+	}
+</style>
