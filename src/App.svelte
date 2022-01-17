@@ -6,14 +6,14 @@
 	export let over_strength_values;
 	export let darkMode;
 
-	let weaponDamage = "";
-	let specialDamage = "";
-	let parkGain = "";
-	let jobGain = "";
-	let equipGain = "";
+	export let weaponDamage = "";
+	export let specialDamage = "";
+	export let parkGain = "";
+	export let jobGain = "";
+	export let equipGain = "";
 	let overStrength = "0";
-	let numLegendStone = "0";
-	let magicStone = {
+	export let numLegendStone = "0";
+	export let magicStone = {
 		level_1: false,
 		level_2: false,
 		level_3: false,
@@ -22,8 +22,8 @@
 		level_5: false,
 	};
 
-	let skill = "general_attack";
-	let strengthEffectLevel = 0;
+	export let skill = "general_attack";
+	export let strLevel = 0;
 
 	let result = {
 		normal: 0,
@@ -54,14 +54,45 @@
 		}
 
 		scale *= skill_data[skill].multiply;
-		scale *= strengthEffectLevel ? 1 + 0.2 * Number(strengthEffectLevel) : 1;
+		scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
 		scale *= 1.06 ** Number(numLegendStone);
 
 		result.normal = normal * scale;
+
+		updateURLParameters();
 	}
 
 	function applyOverStrength() {
 		parkGain = over_strength_values[Number(overStrength)];
+	}
+
+	function updateURLParameters() {
+		const url = new URL(window.location);
+		const params = new URLSearchParams();
+
+		if (weaponDamage) params.set("wd", weaponDamage.toString(36));
+		if (specialDamage) params.set("sd", specialDamage.toString(36));
+		if (parkGain) params.set("pg", parkGain.toString(36));
+		if (jobGain) params.set("jg", jobGain.toString(36));
+		if (equipGain) params.set("eg", equipGain.toString(36));
+		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
+
+		if (skill !== "general_attack") params.set("sk", skill);
+
+		const ms = Object.keys(magicStone).reduce((acc, cur) => {
+			return acc + (magicStone[cur] ? 1 : 0);
+		}, "");
+
+		if (ms !== "000000") {
+			params.set("ms", ms);
+		}
+
+		if (strLevel) {
+			params.set("str", strLevel.toString(36));
+		}
+
+		url.search = params.toString();
+		window.history.replaceState({}, "", url);
 	}
 </script>
 
@@ -164,7 +195,7 @@
 					</section>
 					<section>
 						<label for="strengthEffectInput">攻撃力上昇エフェクトLv</label>
-						<input type="number" placeholder="例:5" bind:value={strengthEffectLevel} />
+						<input type="number" placeholder="例:5" bind:value={strLevel} />
 					</section>
 				</div>
 			</div>

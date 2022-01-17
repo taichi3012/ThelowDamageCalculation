@@ -568,18 +568,18 @@ var app = (function (exports) {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[32] = list[i];
+    	child_ctx[33] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[35] = list[i];
-    	child_ctx[37] = i;
+    	child_ctx[36] = list[i];
+    	child_ctx[38] = i;
     	return child_ctx;
     }
 
-    // (110:7) {#each over_strength_values as _, i}
+    // (141:7) {#each over_strength_values as _, i}
     function create_each_block_1(ctx) {
     	let option;
     	let t;
@@ -587,10 +587,10 @@ var app = (function (exports) {
     	const block = {
     		c: function create() {
     			option = element("option");
-    			t = text(/*i*/ ctx[37]);
-    			option.__value = `${/*i*/ ctx[37]}`;
+    			t = text(/*i*/ ctx[38]);
+    			option.__value = `${/*i*/ ctx[38]}`;
     			option.value = option.__value;
-    			add_location(option, file, 110, 8, 2875);
+    			add_location(option, file, 141, 8, 3837);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -606,17 +606,17 @@ var app = (function (exports) {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(110:7) {#each over_strength_values as _, i}",
+    		source: "(141:7) {#each over_strength_values as _, i}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (160:7) {#each Object.keys(skill_data) as id}
+    // (191:7) {#each Object.keys(skill_data) as id}
     function create_each_block(ctx) {
     	let option;
-    	let t_value = /*skill_data*/ ctx[1][/*id*/ ctx[32]].name + "";
+    	let t_value = /*skill_data*/ ctx[10][/*id*/ ctx[33]].name + "";
     	let t;
     	let option_value_value;
 
@@ -624,18 +624,18 @@ var app = (function (exports) {
     		c: function create() {
     			option = element("option");
     			t = text(t_value);
-    			option.__value = option_value_value = /*id*/ ctx[32];
+    			option.__value = option_value_value = /*id*/ ctx[33];
     			option.value = option.__value;
-    			add_location(option, file, 160, 8, 4668);
+    			add_location(option, file, 191, 8, 5630);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
     			append_dev(option, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*skill_data*/ 2 && t_value !== (t_value = /*skill_data*/ ctx[1][/*id*/ ctx[32]].name + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*skill_data*/ 1024 && t_value !== (t_value = /*skill_data*/ ctx[10][/*id*/ ctx[33]].name + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*skill_data*/ 2 && option_value_value !== (option_value_value = /*id*/ ctx[32])) {
+    			if (dirty[0] & /*skill_data*/ 1024 && option_value_value !== (option_value_value = /*id*/ ctx[33])) {
     				prop_dev(option, "__value", option_value_value);
     				option.value = option.__value;
     			}
@@ -649,7 +649,7 @@ var app = (function (exports) {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(160:7) {#each Object.keys(skill_data) as id}",
+    		source: "(191:7) {#each Object.keys(skill_data) as id}",
     		ctx
     	});
 
@@ -777,7 +777,7 @@ var app = (function (exports) {
     	let current;
     	let mounted;
     	let dispose;
-    	let each_value_1 = /*over_strength_values*/ ctx[2];
+    	let each_value_1 = /*over_strength_values*/ ctx[11];
     	validate_each_argument(each_value_1);
     	let each_blocks_1 = [];
 
@@ -785,7 +785,7 @@ var app = (function (exports) {
     		each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
     	}
 
-    	let each_value = Object.keys(/*skill_data*/ ctx[1]);
+    	let each_value = Object.keys(/*skill_data*/ ctx[10]);
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -799,8 +799,8 @@ var app = (function (exports) {
 
     	let themebutton_props = {};
 
-    	if (/*darkMode*/ ctx[0] !== void 0) {
-    		themebutton_props.darkMode = /*darkMode*/ ctx[0];
+    	if (/*darkMode*/ ctx[9] !== void 0) {
+    		themebutton_props.darkMode = /*darkMode*/ ctx[9];
     	}
 
     	themebutton = new ThemeButton({ props: themebutton_props, $$inline: true });
@@ -958,153 +958,153 @@ var app = (function (exports) {
     			p.textContent = "※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。";
     			t67 = space();
     			create_component(themebutton.$$.fragment);
-    			add_location(h1, file, 69, 2, 1463);
-    			add_location(h40, file, 73, 5, 1588);
+    			add_location(h1, file, 100, 2, 2425);
+    			add_location(h40, file, 104, 5, 2550);
     			attr_dev(span0, "class", "text-big");
-    			add_location(span0, file, 74, 5, 1606);
+    			add_location(span0, file, 105, 5, 2568);
     			attr_dev(div0, "class", "vbox");
-    			add_location(div0, file, 72, 4, 1563);
-    			add_location(h41, file, 77, 5, 1705);
+    			add_location(div0, file, 103, 4, 2525);
+    			add_location(h41, file, 108, 5, 2667);
     			attr_dev(span1, "class", "text-big");
-    			add_location(span1, file, 78, 5, 1727);
+    			add_location(span1, file, 109, 5, 2689);
     			attr_dev(div1, "class", "vbox");
-    			add_location(div1, file, 76, 4, 1680);
+    			add_location(div1, file, 107, 4, 2642);
     			attr_dev(div2, "class", "hbox space-around");
-    			add_location(div2, file, 71, 3, 1526);
+    			add_location(div2, file, 102, 3, 2488);
     			attr_dev(div3, "class", "result vbox padding svelte-7wyjwt");
-    			add_location(div3, file, 70, 2, 1488);
-    			add_location(h20, file, 84, 4, 1903);
+    			add_location(div3, file, 101, 2, 2450);
+    			add_location(h20, file, 115, 4, 2865);
     			attr_dev(label0, "for", "weaponDamageInput");
-    			add_location(label0, file, 86, 5, 1940);
+    			add_location(label0, file, 117, 5, 2902);
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "placeholder", "例:300");
-    			add_location(input0, file, 87, 5, 1994);
+    			add_location(input0, file, 118, 5, 2956);
     			attr_dev(section0, "class", "svelte-7wyjwt");
-    			add_location(section0, file, 85, 4, 1924);
+    			add_location(section0, file, 116, 4, 2886);
     			attr_dev(label1, "for", "specialDamageInput");
-    			add_location(label1, file, 90, 5, 2101);
+    			add_location(label1, file, 121, 5, 3063);
     			attr_dev(input1, "type", "number");
     			attr_dev(input1, "placeholder", "例:50");
-    			add_location(input1, file, 91, 5, 2151);
+    			add_location(input1, file, 122, 5, 3113);
     			attr_dev(section1, "class", "svelte-7wyjwt");
-    			add_location(section1, file, 89, 4, 2085);
+    			add_location(section1, file, 120, 4, 3047);
     			attr_dev(label2, "for", "jobGainInput");
-    			add_location(label2, file, 94, 5, 2258);
+    			add_location(label2, file, 125, 5, 3220);
     			attr_dev(input2, "type", "number");
     			attr_dev(input2, "placeholder", "例:10");
-    			add_location(input2, file, 95, 5, 2306);
+    			add_location(input2, file, 126, 5, 3268);
     			attr_dev(section2, "class", "svelte-7wyjwt");
-    			add_location(section2, file, 93, 4, 2242);
+    			add_location(section2, file, 124, 4, 3204);
     			attr_dev(label3, "for", "equipGainInput");
-    			add_location(label3, file, 98, 5, 2407);
+    			add_location(label3, file, 129, 5, 3369);
     			attr_dev(input3, "type", "number");
     			attr_dev(input3, "placeholder", "例:10");
-    			add_location(input3, file, 99, 5, 2457);
+    			add_location(input3, file, 130, 5, 3419);
     			attr_dev(section3, "class", "svelte-7wyjwt");
-    			add_location(section3, file, 97, 4, 2391);
+    			add_location(section3, file, 128, 4, 3353);
     			attr_dev(label4, "for", "parkGainInput");
-    			add_location(label4, file, 102, 5, 2560);
+    			add_location(label4, file, 133, 5, 3522);
     			attr_dev(input4, "type", "number");
     			attr_dev(input4, "placeholder", "例:140");
-    			add_location(input4, file, 103, 5, 2608);
+    			add_location(input4, file, 134, 5, 3570);
     			attr_dev(section4, "class", "svelte-7wyjwt");
-    			add_location(section4, file, 101, 4, 2544);
-    			add_location(span2, file, 106, 5, 2711);
+    			add_location(section4, file, 132, 4, 3506);
+    			add_location(span2, file, 137, 5, 3673);
     			attr_dev(select0, "class", "flex-grow-3");
     			if (/*overStrength*/ ctx[12] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[20].call(select0));
-    			add_location(select0, file, 108, 6, 2766);
+    			add_location(select0, file, 139, 6, 3728);
     			attr_dev(input5, "class", "flex-grow-1");
     			attr_dev(input5, "type", "button");
     			input5.value = "OS値適用";
-    			add_location(input5, file, 113, 6, 2951);
+    			add_location(input5, file, 144, 6, 3913);
     			attr_dev(div4, "class", "hbox");
-    			add_location(div4, file, 107, 5, 2740);
+    			add_location(div4, file, 138, 5, 3702);
     			attr_dev(section5, "class", "svelte-7wyjwt");
-    			add_location(section5, file, 105, 4, 2695);
+    			add_location(section5, file, 136, 4, 3657);
     			attr_dev(div5, "class", "basicdamage panel padding svelte-7wyjwt");
-    			add_location(div5, file, 83, 3, 1858);
-    			add_location(h21, file, 119, 5, 3156);
+    			add_location(div5, file, 114, 3, 2820);
+    			add_location(h21, file, 150, 5, 4118);
     			attr_dev(label5, "for", "legendValueSelector");
-    			add_location(label5, file, 121, 6, 3218);
+    			add_location(label5, file, 152, 6, 4180);
     			option0.__value = "0";
     			option0.value = option0.__value;
-    			add_location(option0, file, 123, 7, 3322);
+    			add_location(option0, file, 154, 7, 4284);
     			option1.__value = "1";
     			option1.value = option1.__value;
-    			add_location(option1, file, 124, 7, 3360);
+    			add_location(option1, file, 155, 7, 4322);
     			option2.__value = "2";
     			option2.value = option2.__value;
-    			add_location(option2, file, 125, 7, 3398);
+    			add_location(option2, file, 156, 7, 4360);
     			option3.__value = "3";
     			option3.value = option3.__value;
-    			add_location(option3, file, 126, 7, 3436);
-    			if (/*numLegendStone*/ ctx[8] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[21].call(select1));
-    			add_location(select1, file, 122, 6, 3277);
+    			add_location(option3, file, 157, 7, 4398);
+    			if (/*numLegendStone*/ ctx[5] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[21].call(select1));
+    			add_location(select1, file, 153, 6, 4239);
     			attr_dev(section6, "class", "vbox margin-1/2em");
-    			add_location(section6, file, 120, 5, 3175);
+    			add_location(section6, file, 151, 5, 4137);
     			attr_dev(input6, "id", "ms1");
     			attr_dev(input6, "type", "checkbox");
-    			add_location(input6, file, 130, 6, 3523);
+    			add_location(input6, file, 161, 6, 4485);
     			attr_dev(label6, "for", "ms1");
-    			add_location(label6, file, 131, 6, 3602);
-    			add_location(section7, file, 129, 5, 3506);
+    			add_location(label6, file, 162, 6, 4564);
+    			add_location(section7, file, 160, 5, 4468);
     			attr_dev(input7, "id", "ms2");
     			attr_dev(input7, "type", "checkbox");
-    			add_location(input7, file, 134, 6, 3679);
+    			add_location(input7, file, 165, 6, 4641);
     			attr_dev(label7, "for", "ms2");
-    			add_location(label7, file, 135, 6, 3758);
-    			add_location(section8, file, 133, 5, 3662);
+    			add_location(label7, file, 166, 6, 4720);
+    			add_location(section8, file, 164, 5, 4624);
     			attr_dev(input8, "id", "ms3");
     			attr_dev(input8, "type", "checkbox");
-    			add_location(input8, file, 138, 6, 3835);
+    			add_location(input8, file, 169, 6, 4797);
     			attr_dev(label8, "for", "ms3");
-    			add_location(label8, file, 139, 6, 3914);
-    			add_location(section9, file, 137, 5, 3818);
+    			add_location(label8, file, 170, 6, 4876);
+    			add_location(section9, file, 168, 5, 4780);
     			attr_dev(input9, "id", "ms4");
     			attr_dev(input9, "type", "checkbox");
-    			add_location(input9, file, 142, 6, 3991);
+    			add_location(input9, file, 173, 6, 4953);
     			attr_dev(label9, "for", "ms4");
-    			add_location(label9, file, 143, 6, 4070);
-    			add_location(section10, file, 141, 5, 3974);
+    			add_location(label9, file, 174, 6, 5032);
+    			add_location(section10, file, 172, 5, 4936);
     			attr_dev(input10, "id", "ms4.5");
     			attr_dev(input10, "type", "checkbox");
-    			add_location(input10, file, 146, 6, 4147);
+    			add_location(input10, file, 177, 6, 5109);
     			attr_dev(label10, "for", "ms4.5");
-    			add_location(label10, file, 147, 6, 4230);
-    			add_location(section11, file, 145, 5, 4130);
+    			add_location(label10, file, 178, 6, 5192);
+    			add_location(section11, file, 176, 5, 5092);
     			attr_dev(input11, "id", "ms5");
     			attr_dev(input11, "type", "checkbox");
-    			add_location(input11, file, 150, 6, 4311);
+    			add_location(input11, file, 181, 6, 5273);
     			attr_dev(label11, "for", "ms5");
-    			add_location(label11, file, 151, 6, 4390);
-    			add_location(section12, file, 149, 5, 4294);
+    			add_location(label11, file, 182, 6, 5352);
+    			add_location(section12, file, 180, 5, 5256);
     			attr_dev(div6, "class", "magicstone padding vbox");
-    			add_location(div6, file, 118, 4, 3112);
-    			add_location(h22, file, 155, 5, 4503);
+    			add_location(div6, file, 149, 4, 4074);
+    			add_location(h22, file, 186, 5, 5465);
     			attr_dev(label12, "for", "skillSelector");
-    			add_location(label12, file, 157, 6, 4539);
-    			if (/*skill*/ ctx[10] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[28].call(select2));
-    			add_location(select2, file, 158, 6, 4585);
+    			add_location(label12, file, 188, 6, 5501);
+    			if (/*skill*/ ctx[7] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[28].call(select2));
+    			add_location(select2, file, 189, 6, 5547);
     			attr_dev(section13, "class", "svelte-7wyjwt");
-    			add_location(section13, file, 156, 5, 4522);
+    			add_location(section13, file, 187, 5, 5484);
     			attr_dev(label13, "for", "strengthEffectInput");
-    			add_location(label13, file, 165, 6, 4791);
+    			add_location(label13, file, 196, 6, 5753);
     			attr_dev(input12, "type", "number");
     			attr_dev(input12, "placeholder", "例:5");
-    			add_location(input12, file, 166, 6, 4852);
+    			add_location(input12, file, 197, 6, 5814);
     			attr_dev(section14, "class", "svelte-7wyjwt");
-    			add_location(section14, file, 164, 5, 4774);
+    			add_location(section14, file, 195, 5, 5736);
     			attr_dev(div7, "class", "othereffect svelte-7wyjwt");
-    			add_location(div7, file, 154, 4, 4471);
+    			add_location(div7, file, 185, 4, 5433);
     			attr_dev(div8, "class", "vbox panel svelte-7wyjwt");
-    			add_location(div8, file, 117, 3, 3082);
+    			add_location(div8, file, 148, 3, 4044);
     			attr_dev(div9, "class", "hbox space-around");
-    			add_location(div9, file, 82, 2, 1822);
+    			add_location(div9, file, 113, 2, 2784);
     			attr_dev(p, "class", "text-center");
-    			add_location(p, file, 171, 2, 4980);
+    			add_location(p, file, 202, 2, 5931);
     			attr_dev(div10, "class", "container vbox svelte-7wyjwt");
-    			add_location(div10, file, 68, 1, 1431);
-    			add_location(main, file, 67, 0, 1399);
+    			add_location(div10, file, 99, 1, 2393);
+    			add_location(main, file, 98, 0, 2361);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1136,31 +1136,31 @@ var app = (function (exports) {
     			append_dev(section0, label0);
     			append_dev(section0, t13);
     			append_dev(section0, input0);
-    			set_input_value(input0, /*weaponDamage*/ ctx[3]);
+    			set_input_value(input0, /*weaponDamage*/ ctx[0]);
     			append_dev(div5, t14);
     			append_dev(div5, section1);
     			append_dev(section1, label1);
     			append_dev(section1, t16);
     			append_dev(section1, input1);
-    			set_input_value(input1, /*specialDamage*/ ctx[4]);
+    			set_input_value(input1, /*specialDamage*/ ctx[1]);
     			append_dev(div5, t17);
     			append_dev(div5, section2);
     			append_dev(section2, label2);
     			append_dev(section2, t19);
     			append_dev(section2, input2);
-    			set_input_value(input2, /*jobGain*/ ctx[6]);
+    			set_input_value(input2, /*jobGain*/ ctx[3]);
     			append_dev(div5, t20);
     			append_dev(div5, section3);
     			append_dev(section3, label3);
     			append_dev(section3, t22);
     			append_dev(section3, input3);
-    			set_input_value(input3, /*equipGain*/ ctx[7]);
+    			set_input_value(input3, /*equipGain*/ ctx[4]);
     			append_dev(div5, t23);
     			append_dev(div5, section4);
     			append_dev(section4, label4);
     			append_dev(section4, t25);
     			append_dev(section4, input4);
-    			set_input_value(input4, /*parkGain*/ ctx[5]);
+    			set_input_value(input4, /*parkGain*/ ctx[2]);
     			append_dev(div5, t26);
     			append_dev(div5, section5);
     			append_dev(section5, span2);
@@ -1188,41 +1188,41 @@ var app = (function (exports) {
     			append_dev(select1, option1);
     			append_dev(select1, option2);
     			append_dev(select1, option3);
-    			select_option(select1, /*numLegendStone*/ ctx[8]);
+    			select_option(select1, /*numLegendStone*/ ctx[5]);
     			append_dev(div6, t39);
     			append_dev(div6, section7);
     			append_dev(section7, input6);
-    			input6.checked = /*magicStone*/ ctx[9]["level_1"];
+    			input6.checked = /*magicStone*/ ctx[6]["level_1"];
     			append_dev(section7, t40);
     			append_dev(section7, label6);
     			append_dev(div6, t42);
     			append_dev(div6, section8);
     			append_dev(section8, input7);
-    			input7.checked = /*magicStone*/ ctx[9]["level_2"];
+    			input7.checked = /*magicStone*/ ctx[6]["level_2"];
     			append_dev(section8, t43);
     			append_dev(section8, label7);
     			append_dev(div6, t45);
     			append_dev(div6, section9);
     			append_dev(section9, input8);
-    			input8.checked = /*magicStone*/ ctx[9]["level_3"];
+    			input8.checked = /*magicStone*/ ctx[6]["level_3"];
     			append_dev(section9, t46);
     			append_dev(section9, label8);
     			append_dev(div6, t48);
     			append_dev(div6, section10);
     			append_dev(section10, input9);
-    			input9.checked = /*magicStone*/ ctx[9]["level_4"];
+    			input9.checked = /*magicStone*/ ctx[6]["level_4"];
     			append_dev(section10, t49);
     			append_dev(section10, label9);
     			append_dev(div6, t51);
     			append_dev(div6, section11);
     			append_dev(section11, input10);
-    			input10.checked = /*magicStone*/ ctx[9]["level_4.5"];
+    			input10.checked = /*magicStone*/ ctx[6]["level_4.5"];
     			append_dev(section11, t52);
     			append_dev(section11, label10);
     			append_dev(div6, t54);
     			append_dev(div6, section12);
     			append_dev(section12, input11);
-    			input11.checked = /*magicStone*/ ctx[9]["level_5"];
+    			input11.checked = /*magicStone*/ ctx[6]["level_5"];
     			append_dev(section12, t55);
     			append_dev(section12, label11);
     			append_dev(div8, t57);
@@ -1238,13 +1238,13 @@ var app = (function (exports) {
     				each_blocks[i].m(select2, null);
     			}
 
-    			select_option(select2, /*skill*/ ctx[10]);
+    			select_option(select2, /*skill*/ ctx[7]);
     			append_dev(div7, t62);
     			append_dev(div7, section14);
     			append_dev(section14, label13);
     			append_dev(section14, t64);
     			append_dev(section14, input12);
-    			set_input_value(input12, /*strengthEffectLevel*/ ctx[11]);
+    			set_input_value(input12, /*strLevel*/ ctx[8]);
     			append_dev(div10, t65);
     			append_dev(div10, p);
     			append_dev(div10, t67);
@@ -1279,28 +1279,28 @@ var app = (function (exports) {
     			if ((!current || dirty[0] & /*result*/ 8192) && t4_value !== (t4_value = /*result*/ ctx[13].normal.toFixed(2) + "")) set_data_dev(t4, t4_value);
     			if ((!current || dirty[0] & /*result*/ 8192) && t8_value !== (t8_value = /*result*/ ctx[13].critical.toFixed(2) + "")) set_data_dev(t8, t8_value);
 
-    			if (dirty[0] & /*weaponDamage*/ 8 && to_number(input0.value) !== /*weaponDamage*/ ctx[3]) {
-    				set_input_value(input0, /*weaponDamage*/ ctx[3]);
+    			if (dirty[0] & /*weaponDamage*/ 1 && to_number(input0.value) !== /*weaponDamage*/ ctx[0]) {
+    				set_input_value(input0, /*weaponDamage*/ ctx[0]);
     			}
 
-    			if (dirty[0] & /*specialDamage*/ 16 && to_number(input1.value) !== /*specialDamage*/ ctx[4]) {
-    				set_input_value(input1, /*specialDamage*/ ctx[4]);
+    			if (dirty[0] & /*specialDamage*/ 2 && to_number(input1.value) !== /*specialDamage*/ ctx[1]) {
+    				set_input_value(input1, /*specialDamage*/ ctx[1]);
     			}
 
-    			if (dirty[0] & /*jobGain*/ 64 && to_number(input2.value) !== /*jobGain*/ ctx[6]) {
-    				set_input_value(input2, /*jobGain*/ ctx[6]);
+    			if (dirty[0] & /*jobGain*/ 8 && to_number(input2.value) !== /*jobGain*/ ctx[3]) {
+    				set_input_value(input2, /*jobGain*/ ctx[3]);
     			}
 
-    			if (dirty[0] & /*equipGain*/ 128 && to_number(input3.value) !== /*equipGain*/ ctx[7]) {
-    				set_input_value(input3, /*equipGain*/ ctx[7]);
+    			if (dirty[0] & /*equipGain*/ 16 && to_number(input3.value) !== /*equipGain*/ ctx[4]) {
+    				set_input_value(input3, /*equipGain*/ ctx[4]);
     			}
 
-    			if (dirty[0] & /*parkGain*/ 32 && to_number(input4.value) !== /*parkGain*/ ctx[5]) {
-    				set_input_value(input4, /*parkGain*/ ctx[5]);
+    			if (dirty[0] & /*parkGain*/ 4 && to_number(input4.value) !== /*parkGain*/ ctx[2]) {
+    				set_input_value(input4, /*parkGain*/ ctx[2]);
     			}
 
-    			if (dirty[0] & /*over_strength_values*/ 4) {
-    				each_value_1 = /*over_strength_values*/ ctx[2];
+    			if (dirty[0] & /*over_strength_values*/ 2048) {
+    				each_value_1 = /*over_strength_values*/ ctx[11];
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -1327,36 +1327,36 @@ var app = (function (exports) {
     				select_option(select0, /*overStrength*/ ctx[12]);
     			}
 
-    			if (dirty[0] & /*numLegendStone*/ 256) {
-    				select_option(select1, /*numLegendStone*/ ctx[8]);
+    			if (dirty[0] & /*numLegendStone*/ 32) {
+    				select_option(select1, /*numLegendStone*/ ctx[5]);
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input6.checked = /*magicStone*/ ctx[9]["level_1"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input6.checked = /*magicStone*/ ctx[6]["level_1"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input7.checked = /*magicStone*/ ctx[9]["level_2"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input7.checked = /*magicStone*/ ctx[6]["level_2"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input8.checked = /*magicStone*/ ctx[9]["level_3"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input8.checked = /*magicStone*/ ctx[6]["level_3"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input9.checked = /*magicStone*/ ctx[9]["level_4"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input9.checked = /*magicStone*/ ctx[6]["level_4"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input10.checked = /*magicStone*/ ctx[9]["level_4.5"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input10.checked = /*magicStone*/ ctx[6]["level_4.5"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 512) {
-    				input11.checked = /*magicStone*/ ctx[9]["level_5"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input11.checked = /*magicStone*/ ctx[6]["level_5"];
     			}
 
-    			if (dirty[0] & /*skill_data*/ 2) {
-    				each_value = Object.keys(/*skill_data*/ ctx[1]);
+    			if (dirty[0] & /*skill_data*/ 1024) {
+    				each_value = Object.keys(/*skill_data*/ ctx[10]);
     				validate_each_argument(each_value);
     				let i;
 
@@ -1379,19 +1379,19 @@ var app = (function (exports) {
     				each_blocks.length = each_value.length;
     			}
 
-    			if (dirty[0] & /*skill, skill_data*/ 1026) {
-    				select_option(select2, /*skill*/ ctx[10]);
+    			if (dirty[0] & /*skill, skill_data*/ 1152) {
+    				select_option(select2, /*skill*/ ctx[7]);
     			}
 
-    			if (dirty[0] & /*strengthEffectLevel*/ 2048 && to_number(input12.value) !== /*strengthEffectLevel*/ ctx[11]) {
-    				set_input_value(input12, /*strengthEffectLevel*/ ctx[11]);
+    			if (dirty[0] & /*strLevel*/ 256 && to_number(input12.value) !== /*strLevel*/ ctx[8]) {
+    				set_input_value(input12, /*strLevel*/ ctx[8]);
     			}
 
     			const themebutton_changes = {};
 
-    			if (!updating_darkMode && dirty[0] & /*darkMode*/ 1) {
+    			if (!updating_darkMode && dirty[0] & /*darkMode*/ 512) {
     				updating_darkMode = true;
-    				themebutton_changes.darkMode = /*darkMode*/ ctx[0];
+    				themebutton_changes.darkMode = /*darkMode*/ ctx[9];
     				add_flush_callback(() => updating_darkMode = false);
     			}
 
@@ -1433,25 +1433,25 @@ var app = (function (exports) {
     	let { skill_data } = $$props;
     	let { over_strength_values } = $$props;
     	let { darkMode } = $$props;
-    	let weaponDamage = "";
-    	let specialDamage = "";
-    	let parkGain = "";
-    	let jobGain = "";
-    	let equipGain = "";
+    	let { weaponDamage = "" } = $$props;
+    	let { specialDamage = "" } = $$props;
+    	let { parkGain = "" } = $$props;
+    	let { jobGain = "" } = $$props;
+    	let { equipGain = "" } = $$props;
     	let overStrength = "0";
-    	let numLegendStone = "0";
+    	let { numLegendStone = "0" } = $$props;
 
-    	let magicStone = {
+    	let { magicStone = {
     		level_1: false,
     		level_2: false,
     		level_3: false,
     		level_4: false,
     		"level_4.5": false,
     		level_5: false
-    	};
+    	} } = $$props;
 
-    	let skill = "general_attack";
-    	let strengthEffectLevel = 0;
+    	let { skill = "general_attack" } = $$props;
+    	let { strLevel = 0 } = $$props;
     	let result = { normal: 0, critical: 0 };
 
     	let magicStoneScales = {
@@ -1464,10 +1464,53 @@ var app = (function (exports) {
     	};
 
     	function applyOverStrength() {
-    		$$invalidate(5, parkGain = over_strength_values[Number(overStrength)]);
+    		$$invalidate(2, parkGain = over_strength_values[Number(overStrength)]);
     	}
 
-    	const writable_props = ['skill_data', 'over_strength_values', 'darkMode'];
+    	function updateURLParameters() {
+    		const url = new URL(window.location);
+    		const params = new URLSearchParams();
+    		if (weaponDamage) params.set("wd", weaponDamage.toString(36));
+    		if (specialDamage) params.set("sd", specialDamage.toString(36));
+    		if (parkGain) params.set("pg", parkGain.toString(36));
+    		if (jobGain) params.set("jg", jobGain.toString(36));
+    		if (equipGain) params.set("eg", equipGain.toString(36));
+    		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
+    		if (skill !== "general_attack") params.set("sk", skill);
+
+    		const ms = Object.keys(magicStone).reduce(
+    			(acc, cur) => {
+    				return acc + (magicStone[cur] ? 1 : 0);
+    			},
+    			""
+    		);
+
+    		if (ms !== "000000") {
+    			params.set("ms", ms);
+    		}
+
+    		if (strLevel) {
+    			params.set("str", strLevel.toString(36));
+    		}
+
+    		url.search = params.toString();
+    		window.history.replaceState({}, "", url);
+    	}
+
+    	const writable_props = [
+    		'skill_data',
+    		'over_strength_values',
+    		'darkMode',
+    		'weaponDamage',
+    		'specialDamage',
+    		'parkGain',
+    		'jobGain',
+    		'equipGain',
+    		'numLegendStone',
+    		'magicStone',
+    		'skill',
+    		'strLevel'
+    	];
 
     	Object_1.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<App> was created with unknown prop '${key}'`);
@@ -1475,27 +1518,27 @@ var app = (function (exports) {
 
     	function input0_input_handler() {
     		weaponDamage = to_number(this.value);
-    		$$invalidate(3, weaponDamage);
+    		$$invalidate(0, weaponDamage);
     	}
 
     	function input1_input_handler() {
     		specialDamage = to_number(this.value);
-    		$$invalidate(4, specialDamage);
+    		$$invalidate(1, specialDamage);
     	}
 
     	function input2_input_handler() {
     		jobGain = to_number(this.value);
-    		$$invalidate(6, jobGain);
+    		$$invalidate(3, jobGain);
     	}
 
     	function input3_input_handler() {
     		equipGain = to_number(this.value);
-    		$$invalidate(7, equipGain);
+    		$$invalidate(4, equipGain);
     	}
 
     	function input4_input_handler() {
     		parkGain = to_number(this.value);
-    		$$invalidate(5, parkGain);
+    		$$invalidate(2, parkGain);
     	}
 
     	function select0_change_handler() {
@@ -1505,59 +1548,68 @@ var app = (function (exports) {
 
     	function select1_change_handler() {
     		numLegendStone = select_value(this);
-    		$$invalidate(8, numLegendStone);
+    		$$invalidate(5, numLegendStone);
     	}
 
     	function input6_change_handler() {
     		magicStone["level_1"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input7_change_handler() {
     		magicStone["level_2"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input8_change_handler() {
     		magicStone["level_3"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input9_change_handler() {
     		magicStone["level_4"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input10_change_handler() {
     		magicStone["level_4.5"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input11_change_handler() {
     		magicStone["level_5"] = this.checked;
-    		$$invalidate(9, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function select2_change_handler() {
     		skill = select_value(this);
-    		$$invalidate(10, skill);
-    		$$invalidate(1, skill_data);
+    		$$invalidate(7, skill);
+    		$$invalidate(10, skill_data);
     	}
 
     	function input12_input_handler() {
-    		strengthEffectLevel = to_number(this.value);
-    		$$invalidate(11, strengthEffectLevel);
+    		strLevel = to_number(this.value);
+    		$$invalidate(8, strLevel);
     	}
 
     	function themebutton_darkMode_binding(value) {
     		darkMode = value;
-    		$$invalidate(0, darkMode);
+    		$$invalidate(9, darkMode);
     	}
 
     	$$self.$$set = $$props => {
-    		if ('skill_data' in $$props) $$invalidate(1, skill_data = $$props.skill_data);
-    		if ('over_strength_values' in $$props) $$invalidate(2, over_strength_values = $$props.over_strength_values);
-    		if ('darkMode' in $$props) $$invalidate(0, darkMode = $$props.darkMode);
+    		if ('skill_data' in $$props) $$invalidate(10, skill_data = $$props.skill_data);
+    		if ('over_strength_values' in $$props) $$invalidate(11, over_strength_values = $$props.over_strength_values);
+    		if ('darkMode' in $$props) $$invalidate(9, darkMode = $$props.darkMode);
+    		if ('weaponDamage' in $$props) $$invalidate(0, weaponDamage = $$props.weaponDamage);
+    		if ('specialDamage' in $$props) $$invalidate(1, specialDamage = $$props.specialDamage);
+    		if ('parkGain' in $$props) $$invalidate(2, parkGain = $$props.parkGain);
+    		if ('jobGain' in $$props) $$invalidate(3, jobGain = $$props.jobGain);
+    		if ('equipGain' in $$props) $$invalidate(4, equipGain = $$props.equipGain);
+    		if ('numLegendStone' in $$props) $$invalidate(5, numLegendStone = $$props.numLegendStone);
+    		if ('magicStone' in $$props) $$invalidate(6, magicStone = $$props.magicStone);
+    		if ('skill' in $$props) $$invalidate(7, skill = $$props.skill);
+    		if ('strLevel' in $$props) $$invalidate(8, strLevel = $$props.strLevel);
     	};
 
     	$$self.$capture_state = () => ({
@@ -1575,26 +1627,27 @@ var app = (function (exports) {
     		numLegendStone,
     		magicStone,
     		skill,
-    		strengthEffectLevel,
+    		strLevel,
     		result,
     		magicStoneScales,
-    		applyOverStrength
+    		applyOverStrength,
+    		updateURLParameters
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('skill_data' in $$props) $$invalidate(1, skill_data = $$props.skill_data);
-    		if ('over_strength_values' in $$props) $$invalidate(2, over_strength_values = $$props.over_strength_values);
-    		if ('darkMode' in $$props) $$invalidate(0, darkMode = $$props.darkMode);
-    		if ('weaponDamage' in $$props) $$invalidate(3, weaponDamage = $$props.weaponDamage);
-    		if ('specialDamage' in $$props) $$invalidate(4, specialDamage = $$props.specialDamage);
-    		if ('parkGain' in $$props) $$invalidate(5, parkGain = $$props.parkGain);
-    		if ('jobGain' in $$props) $$invalidate(6, jobGain = $$props.jobGain);
-    		if ('equipGain' in $$props) $$invalidate(7, equipGain = $$props.equipGain);
+    		if ('skill_data' in $$props) $$invalidate(10, skill_data = $$props.skill_data);
+    		if ('over_strength_values' in $$props) $$invalidate(11, over_strength_values = $$props.over_strength_values);
+    		if ('darkMode' in $$props) $$invalidate(9, darkMode = $$props.darkMode);
+    		if ('weaponDamage' in $$props) $$invalidate(0, weaponDamage = $$props.weaponDamage);
+    		if ('specialDamage' in $$props) $$invalidate(1, specialDamage = $$props.specialDamage);
+    		if ('parkGain' in $$props) $$invalidate(2, parkGain = $$props.parkGain);
+    		if ('jobGain' in $$props) $$invalidate(3, jobGain = $$props.jobGain);
+    		if ('equipGain' in $$props) $$invalidate(4, equipGain = $$props.equipGain);
     		if ('overStrength' in $$props) $$invalidate(12, overStrength = $$props.overStrength);
-    		if ('numLegendStone' in $$props) $$invalidate(8, numLegendStone = $$props.numLegendStone);
-    		if ('magicStone' in $$props) $$invalidate(9, magicStone = $$props.magicStone);
-    		if ('skill' in $$props) $$invalidate(10, skill = $$props.skill);
-    		if ('strengthEffectLevel' in $$props) $$invalidate(11, strengthEffectLevel = $$props.strengthEffectLevel);
+    		if ('numLegendStone' in $$props) $$invalidate(5, numLegendStone = $$props.numLegendStone);
+    		if ('magicStone' in $$props) $$invalidate(6, magicStone = $$props.magicStone);
+    		if ('skill' in $$props) $$invalidate(7, skill = $$props.skill);
+    		if ('strLevel' in $$props) $$invalidate(8, strLevel = $$props.strLevel);
     		if ('result' in $$props) $$invalidate(13, result = $$props.result);
     		if ('magicStoneScales' in $$props) $$invalidate(31, magicStoneScales = $$props.magicStoneScales);
     	};
@@ -1604,7 +1657,7 @@ var app = (function (exports) {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*weaponDamage, skill_data, skill, specialDamage, parkGain, jobGain, equipGain, magicStone, strengthEffectLevel, numLegendStone*/ 4090) {
+    		if ($$self.$$.dirty[0] & /*weaponDamage, skill_data, skill, specialDamage, parkGain, jobGain, equipGain, magicStone, strLevel, numLegendStone*/ 1535) {
     			{
     				let normal = Number(weaponDamage);
 
@@ -1621,21 +1674,15 @@ var app = (function (exports) {
     				}
 
     				scale *= skill_data[skill].multiply;
-
-    				scale *= strengthEffectLevel
-    				? 1 + 0.2 * Number(strengthEffectLevel)
-    				: 1;
-
+    				scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
     				scale *= 1.06 ** Number(numLegendStone);
     				$$invalidate(13, result.normal = normal * scale, result);
+    				updateURLParameters();
     			}
     		}
     	};
 
     	return [
-    		darkMode,
-    		skill_data,
-    		over_strength_values,
     		weaponDamage,
     		specialDamage,
     		parkGain,
@@ -1644,7 +1691,10 @@ var app = (function (exports) {
     		numLegendStone,
     		magicStone,
     		skill,
-    		strengthEffectLevel,
+    		strLevel,
+    		darkMode,
+    		skill_data,
+    		over_strength_values,
     		overStrength,
     		result,
     		applyOverStrength,
@@ -1678,9 +1728,18 @@ var app = (function (exports) {
     			create_fragment,
     			safe_not_equal,
     			{
-    				skill_data: 1,
-    				over_strength_values: 2,
-    				darkMode: 0
+    				skill_data: 10,
+    				over_strength_values: 11,
+    				darkMode: 9,
+    				weaponDamage: 0,
+    				specialDamage: 1,
+    				parkGain: 2,
+    				jobGain: 3,
+    				equipGain: 4,
+    				numLegendStone: 5,
+    				magicStone: 6,
+    				skill: 7,
+    				strLevel: 8
     			},
     			null,
     			[-1, -1]
@@ -1696,15 +1755,15 @@ var app = (function (exports) {
     		const { ctx } = this.$$;
     		const props = options.props || {};
 
-    		if (/*skill_data*/ ctx[1] === undefined && !('skill_data' in props)) {
+    		if (/*skill_data*/ ctx[10] === undefined && !('skill_data' in props)) {
     			console.warn("<App> was created without expected prop 'skill_data'");
     		}
 
-    		if (/*over_strength_values*/ ctx[2] === undefined && !('over_strength_values' in props)) {
+    		if (/*over_strength_values*/ ctx[11] === undefined && !('over_strength_values' in props)) {
     			console.warn("<App> was created without expected prop 'over_strength_values'");
     		}
 
-    		if (/*darkMode*/ ctx[0] === undefined && !('darkMode' in props)) {
+    		if (/*darkMode*/ ctx[9] === undefined && !('darkMode' in props)) {
     			console.warn("<App> was created without expected prop 'darkMode'");
     		}
     	}
@@ -1730,6 +1789,78 @@ var app = (function (exports) {
     	}
 
     	set darkMode(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get weaponDamage() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set weaponDamage(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get specialDamage() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set specialDamage(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get parkGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set parkGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get jobGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set jobGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get equipGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set equipGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get numLegendStone() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set numLegendStone(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get magicStone() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set magicStone(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get skill() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set skill(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get strLevel() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set strLevel(value) {
     		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -1836,6 +1967,7 @@ var app = (function (exports) {
     		skill_data,
     		over_strength_values,
     		darkMode: localStorage.getItem("dark_mode") == "true",
+    		...parseURLParams(),
     	},
     });
 
@@ -1850,8 +1982,37 @@ var app = (function (exports) {
     	}
     }
 
+    function parseURLParams() {
+    	const params = new URLSearchParams(location.search);
+    	const parsed = {
+    		weaponDamage: params.has("wd") ? parseInt(params.get("wd"), 36) : 0,
+    		specialDamage: params.has("sd") ? parseInt(params.get("sd"), 36) : 0,
+    		parkGain: params.has("pg") ? parseInt(params.get("pg"), 36) : 0,
+    		jobGain: params.has("jg") ? parseInt(params.get("jg"), 36) : 0,
+    		equipGain: params.has("eg") ? parseInt(params.get("eg"), 36) : 0,
+    		numLegendStone: params.has("ns") ? parseInt(params.get("ns"), 36) : "0",
+    		skill: params.has("sk") ? params.get("sk") : "general_attack",
+    		strLevel: params.has("str") ? parseInt(params.get("str"), 36) : 0,
+    	};
+
+    	if (params.has("ms")) {
+    		const flg = parseInt(params.get("ms"), 2);
+    		parsed["magicStone"] = {
+    			level_1: ((flg >> 5) & 1) == 1,
+    			level_2: ((flg >> 4) & 1) == 1,
+    			level_3: ((flg >> 3) & 1) == 1,
+    			level_4: ((flg >> 2) & 1) == 1,
+    			"level_4.5": ((flg >> 1) & 1) == 1,
+    			level_5: ((flg >> 0) & 1) == 1,
+    		};
+    	}
+
+    	return parsed;
+    }
+
     exports.applyTheme = applyTheme;
     exports["default"] = app;
+    exports.parseURLParams = parseURLParams;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
