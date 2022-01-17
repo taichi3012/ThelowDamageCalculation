@@ -61,7 +61,6 @@
 	}
 
 	function applyOverStrength() {
-		console.log(overStrength);
 		parkGain = over_strength_values[Number(overStrength)];
 	}
 </script>
