@@ -1,6 +1,10 @@
 <script>
+	import ThemeButton from "./component/ThemeButton.svelte";
+	import { applyTheme } from "./main";
+
 	export let skill_data;
 	export let over_strength_values;
+	export let darkMode;
 
 	let weaponDamage = "";
 	let specialDamage = "";
@@ -62,7 +66,7 @@
 	}
 </script>
 
-<main>
+<main on:load={applyTheme()}>
 	<div class="container vbox">
 		<h1>Thelowダメージ計算</h1>
 		<div class="result vbox padding">
@@ -167,25 +171,9 @@
 			</div>
 		</div>
 		<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
+		<ThemeButton bind:darkMode />
 	</div>
 </main>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
 </style>
