@@ -176,4 +176,35 @@
 </main>
 
 <style>
+	.container {
+		margin: auto;
+		max-width: 1000px;
+		min-height: 100vh;
+	}
+
+	.panel {
+		min-width: 40%;
+	}
+
+	.basicdamage {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.basicdamage section {
+		display: flex;
+		flex-direction: column;
+		margin: 0.5em;
+	}
+
+	.othereffect section {
+		display: flex;
+		flex-direction: column;
+		margin: 0.5em;
+	}
+
+	.result {
+		justify-content: center;
+		text-align: center;
+	}
 </style>

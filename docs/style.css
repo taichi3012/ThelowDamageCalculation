@@ -22,38 +22,6 @@ body {
   font-weight: 600;
 }
 
-.container {
-  margin: auto;
-  max-width: 1000px;
-  min-height: 100vh;
-}
-
-.panel {
-  min-width: 40%;
-}
-
-.basicdamage {
-  display: flex;
-  flex-direction: column;
-}
-
-.basicdamage section {
-  display: flex;
-  flex-direction: column;
-  margin: 0.5em;
-}
-
-.othereffect section {
-  display: flex;
-  flex-direction: column;
-  margin: 0.5em;
-}
-
-.result {
-  justify-content: center;
-  text-align: center;
-}
-
 input[type="number"] {
   color: var(--text-main);
   background: var(--bg-sub);
@@ -127,4 +95,54 @@ h2 {
 
 h4 {
   color: var(--text-sub)
+}
+
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.hbox {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+.text-big {
+  font-size: 4em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.padding {
+  padding: 1em;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.flex-grow-2 {
+  flex-grow: 2;
+}
+
+.flex-grow-3 {
+  flex-grow: 3;
+}
+
+.margin-1\/2em {
+  margin: 0.5em;
 }
