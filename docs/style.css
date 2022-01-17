@@ -1,12 +1,11 @@
 :root {
   --bg-main: #fff;
-  --bg-sub: #fff;
+  --bg-sub: #eee;
   --text-main: #222;
   --text-sub: #666;
 }
 
 :root[theme="dark"] {
-  transition: 1s;
   --bg-main: #333;
   --bg-sub: #666;
   --text-main: #fff;
@@ -15,6 +14,7 @@
 
 html,
 body {
+  transition: all linear 1s;
   color: var(--text-main);
   background-color: var(--bg-main);
   margin: 0;
@@ -52,15 +52,6 @@ body {
 .result {
   justify-content: center;
   text-align: center;
-}
-
-#switch-theme {
-  color: var(--text-main);
-  user-select: none;
-  position: absolute;
-  cursor: pointer;
-  top: 1em;
-  right: 1em;
 }
 
 input[type="number"] {

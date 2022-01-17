@@ -7,7 +7,19 @@ const app = new App({
 	props: {
 		skill_data,
 		over_strength_values,
+		darkMode: localStorage.getItem("dark_mode") == "true",
 	},
 });
+
+export function applyTheme() {
+	const darkMode = localStorage.getItem("dark_mode") == "true";
+
+	//Apply theme attribute
+	if (darkMode) {
+		document.documentElement.setAttribute("theme", "dark");
+	} else {
+		document.documentElement.removeAttribute("theme");
+	}
+}
 
 export default app;
