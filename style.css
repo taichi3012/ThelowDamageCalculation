@@ -1,0 +1,150 @@
+:root {
+  --bg-main: #fff;
+  --bg-sub: #eee;
+  --text-main: #222;
+  --text-sub: #666;
+}
+
+:root[theme="dark"] {
+  --bg-main: #333;
+  --bg-sub: #666;
+  --text-main: #fff;
+  --text-sub: #aaa;
+}
+
+html,
+body {
+  transition: all linear 1s;
+  color: var(--text-main);
+  background-color: var(--bg-main);
+  margin: 0;
+  font-family: Arial, Helvetica, "游ゴシック", "メイリオ";
+  font-weight: 600;
+  font-display: swap;
+}
+
+input[type="number"] {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
+  font: inherit;
+  padding: 0.3em 0.6em;
+  margin: 0.2em;
+  border-radius: 0.4em;
+  outline: none;
+}
+
+input[type="button"] {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
+  font: inherit;
+  padding: 0.3em 0.6em;
+  margin: 0.2em;
+  border-radius: 0.4em;
+  outline: none;
+}
+
+input[type="checkbox"] {
+  display: none;
+}
+
+input[type="checkbox"]+label {
+  user-select: none;
+  padding-left: 1em;
+}
+
+input[type="checkbox"]+label::before {
+  font-family: 'Material Icons';
+  display: inline-block;
+  cursor: pointer;
+  font-size: 1.4em;
+  position: relative;
+  top: 0.3em;
+  left: -0.2em;
+}
+
+input[type=checkbox]+label::before {
+  font-family: 'Material Icons';
+  content: "\e835";
+}
+
+input[type=checkbox]:checked+label::before {
+  font-family: 'Material Icons';
+  content: "\e876";
+}
+
+select {
+  color: var(--text-main);
+  background: var(--bg-sub);
+  border: 1px solid var(--text-sub);
+  font: inherit;
+  padding: 0.3em 0.6em;
+  margin: 0.2em;
+  border-radius: 0.4em;
+  outline: none;
+}
+
+h1 {
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 0.2em;
+  border-bottom: 2px solid var(--text-sub);
+}
+
+small {
+  color: var(--text-sub);
+}
+
+
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.hbox {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+.text-big {
+  font-size: 4em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.padding {
+  padding: 1em;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.flex-grow-2 {
+  flex-grow: 2;
+}
+
+.flex-grow-3 {
+  flex-grow: 3;
+}
+
+.margin-1\/2em {
+  margin: 0.5em;
+}
