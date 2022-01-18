@@ -121,7 +121,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="hbox space-around">
+		<div class="params space-around">
 			<div class="basicdamage panel padding">
 				<h2>基本ダメージ</h2>
 				<section>
@@ -216,10 +216,25 @@
 </main>
 
 <style>
+	.params {
+		display: flex;
+		flex-direction: row;
+	}
+
 	.container {
 		margin: auto;
 		max-width: 1000px;
 		min-height: 100vh;
+	}
+
+	@media screen and (max-width: 640px) {
+		.params {
+			display: flex;
+			flex-direction: column;
+		}
+		.container {
+			margin: 0 0.4em;
+		}
 	}
 
 	.panel {
