@@ -111,11 +111,11 @@
 		<h1>Thelowダメージ計算</h1>
 		<div class="result padding">
 			<div class="vbox">
-				<h4>通常</h4>
+				<small>通常</small>
 				<span class="text-big">{$normalResult.toFixed(2)}</span>
 			</div>
 			<div class="vbox">
-				<h4>クリティカル</h4>
+				<small>クリティカル</small>
 				<span class="text-big">{$criticalResult.toFixed(2)}</span>
 			</div>
 		</div>
