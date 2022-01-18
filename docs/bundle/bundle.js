@@ -787,7 +787,7 @@ var app = (function (exports) {
     	return child_ctx;
     }
 
-    // (151:7) {#each over_strength_values as _, i}
+    // (149:7) {#each over_strength_values as _, i}
     function create_each_block_1(ctx) {
     	let option;
     	let t;
@@ -798,7 +798,7 @@ var app = (function (exports) {
     			t = text(/*i*/ ctx[41]);
     			option.__value = `${/*i*/ ctx[41]}`;
     			option.value = option.__value;
-    			add_location(option, file, 151, 8, 4120);
+    			add_location(option, file, 149, 8, 4060);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -814,14 +814,14 @@ var app = (function (exports) {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(151:7) {#each over_strength_values as _, i}",
+    		source: "(149:7) {#each over_strength_values as _, i}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (201:7) {#each Object.keys(skill_data) as id}
+    // (199:7) {#each Object.keys(skill_data) as id}
     function create_each_block(ctx) {
     	let option;
     	let t_value = /*skill_data*/ ctx[10][/*id*/ ctx[36]].name + "";
@@ -834,7 +834,7 @@ var app = (function (exports) {
     			t = text(t_value);
     			option.__value = option_value_value = /*id*/ ctx[36];
     			option.value = option.__value;
-    			add_location(option, file, 201, 8, 5913);
+    			add_location(option, file, 199, 8, 5853);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -857,7 +857,7 @@ var app = (function (exports) {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(201:7) {#each Object.keys(skill_data) as id}",
+    		source: "(199:7) {#each Object.keys(skill_data) as id}",
     		ctx
     	});
 
@@ -866,10 +866,9 @@ var app = (function (exports) {
 
     function create_fragment(ctx) {
     	let main;
-    	let div10;
+    	let div9;
     	let h1;
     	let t1;
-    	let div3;
     	let div2;
     	let div0;
     	let h40;
@@ -885,8 +884,8 @@ var app = (function (exports) {
     	let t8_value = /*$criticalResult*/ ctx[14].toFixed(2) + "";
     	let t8;
     	let t9;
-    	let div9;
-    	let div5;
+    	let div8;
+    	let div4;
     	let h20;
     	let t11;
     	let section0;
@@ -917,13 +916,13 @@ var app = (function (exports) {
     	let section5;
     	let span2;
     	let t28;
-    	let div4;
+    	let div3;
     	let select0;
     	let t29;
     	let input5;
     	let t30;
-    	let div8;
-    	let div6;
+    	let div7;
+    	let div5;
     	let h21;
     	let t32;
     	let section6;
@@ -965,7 +964,7 @@ var app = (function (exports) {
     	let t55;
     	let label11;
     	let t57;
-    	let div7;
+    	let div6;
     	let h22;
     	let t59;
     	let section13;
@@ -1017,11 +1016,10 @@ var app = (function (exports) {
     	const block = {
     		c: function create() {
     			main = element("main");
-    			div10 = element("div");
+    			div9 = element("div");
     			h1 = element("h1");
     			h1.textContent = "Thelowダメージ計算";
     			t1 = space();
-    			div3 = element("div");
     			div2 = element("div");
     			div0 = element("div");
     			h40 = element("h4");
@@ -1037,8 +1035,8 @@ var app = (function (exports) {
     			span1 = element("span");
     			t8 = text(t8_value);
     			t9 = space();
-    			div9 = element("div");
-    			div5 = element("div");
+    			div8 = element("div");
+    			div4 = element("div");
     			h20 = element("h2");
     			h20.textContent = "基本ダメージ";
     			t11 = space();
@@ -1076,7 +1074,7 @@ var app = (function (exports) {
     			span2 = element("span");
     			span2.textContent = "オーバーストレンジ";
     			t28 = space();
-    			div4 = element("div");
+    			div3 = element("div");
     			select0 = element("select");
 
     			for (let i = 0; i < each_blocks_1.length; i += 1) {
@@ -1086,8 +1084,8 @@ var app = (function (exports) {
     			t29 = space();
     			input5 = element("input");
     			t30 = space();
-    			div8 = element("div");
-    			div6 = element("div");
+    			div7 = element("div");
+    			div5 = element("div");
     			h21 = element("h2");
     			h21.textContent = "魔法石";
     			t32 = space();
@@ -1141,7 +1139,7 @@ var app = (function (exports) {
     			label11 = element("label");
     			label11.textContent = "特攻魔法石Level5 or Legend";
     			t57 = space();
-    			div7 = element("div");
+    			div6 = element("div");
     			h22 = element("h2");
     			h22.textContent = "その他";
     			t59 = space();
@@ -1167,151 +1165,149 @@ var app = (function (exports) {
     			t67 = space();
     			create_component(themebutton.$$.fragment);
     			add_location(h1, file, 110, 2, 2706);
-    			add_location(h40, file, 114, 5, 2831);
+    			add_location(h40, file, 113, 4, 2788);
     			attr_dev(span0, "class", "text-big");
-    			add_location(span0, file, 115, 5, 2849);
+    			add_location(span0, file, 114, 4, 2805);
     			attr_dev(div0, "class", "vbox");
-    			add_location(div0, file, 113, 4, 2806);
-    			add_location(h41, file, 118, 5, 2948);
+    			add_location(div0, file, 112, 3, 2764);
+    			add_location(h41, file, 117, 4, 2901);
     			attr_dev(span1, "class", "text-big");
-    			add_location(span1, file, 119, 5, 2970);
+    			add_location(span1, file, 118, 4, 2922);
     			attr_dev(div1, "class", "vbox");
-    			add_location(div1, file, 117, 4, 2923);
-    			attr_dev(div2, "class", "hbox space-around");
-    			add_location(div2, file, 112, 3, 2769);
-    			attr_dev(div3, "class", "result vbox padding svelte-18j7tw3");
-    			add_location(div3, file, 111, 2, 2731);
-    			add_location(h20, file, 125, 4, 3148);
+    			add_location(div1, file, 116, 3, 2877);
+    			attr_dev(div2, "class", "result padding svelte-13yd3sg");
+    			add_location(div2, file, 111, 2, 2731);
+    			add_location(h20, file, 123, 4, 3088);
     			attr_dev(label0, "for", "weaponDamageInput");
-    			add_location(label0, file, 127, 5, 3185);
+    			add_location(label0, file, 125, 5, 3125);
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "placeholder", "例:300");
-    			add_location(input0, file, 128, 5, 3239);
-    			attr_dev(section0, "class", "svelte-18j7tw3");
-    			add_location(section0, file, 126, 4, 3169);
+    			add_location(input0, file, 126, 5, 3179);
+    			attr_dev(section0, "class", "svelte-13yd3sg");
+    			add_location(section0, file, 124, 4, 3109);
     			attr_dev(label1, "for", "specialDamageInput");
-    			add_location(label1, file, 131, 5, 3346);
+    			add_location(label1, file, 129, 5, 3286);
     			attr_dev(input1, "type", "number");
     			attr_dev(input1, "placeholder", "例:50");
-    			add_location(input1, file, 132, 5, 3396);
-    			attr_dev(section1, "class", "svelte-18j7tw3");
-    			add_location(section1, file, 130, 4, 3330);
+    			add_location(input1, file, 130, 5, 3336);
+    			attr_dev(section1, "class", "svelte-13yd3sg");
+    			add_location(section1, file, 128, 4, 3270);
     			attr_dev(label2, "for", "jobGainInput");
-    			add_location(label2, file, 135, 5, 3503);
+    			add_location(label2, file, 133, 5, 3443);
     			attr_dev(input2, "type", "number");
     			attr_dev(input2, "placeholder", "例:10");
-    			add_location(input2, file, 136, 5, 3551);
-    			attr_dev(section2, "class", "svelte-18j7tw3");
-    			add_location(section2, file, 134, 4, 3487);
+    			add_location(input2, file, 134, 5, 3491);
+    			attr_dev(section2, "class", "svelte-13yd3sg");
+    			add_location(section2, file, 132, 4, 3427);
     			attr_dev(label3, "for", "equipGainInput");
-    			add_location(label3, file, 139, 5, 3652);
+    			add_location(label3, file, 137, 5, 3592);
     			attr_dev(input3, "type", "number");
     			attr_dev(input3, "placeholder", "例:10");
-    			add_location(input3, file, 140, 5, 3702);
-    			attr_dev(section3, "class", "svelte-18j7tw3");
-    			add_location(section3, file, 138, 4, 3636);
+    			add_location(input3, file, 138, 5, 3642);
+    			attr_dev(section3, "class", "svelte-13yd3sg");
+    			add_location(section3, file, 136, 4, 3576);
     			attr_dev(label4, "for", "parkGainInput");
-    			add_location(label4, file, 143, 5, 3805);
+    			add_location(label4, file, 141, 5, 3745);
     			attr_dev(input4, "type", "number");
     			attr_dev(input4, "placeholder", "例:140");
-    			add_location(input4, file, 144, 5, 3853);
-    			attr_dev(section4, "class", "svelte-18j7tw3");
-    			add_location(section4, file, 142, 4, 3789);
-    			add_location(span2, file, 147, 5, 3956);
+    			add_location(input4, file, 142, 5, 3793);
+    			attr_dev(section4, "class", "svelte-13yd3sg");
+    			add_location(section4, file, 140, 4, 3729);
+    			add_location(span2, file, 145, 5, 3896);
     			attr_dev(select0, "class", "flex-grow-3");
     			if (/*overStrength*/ ctx[12] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[23].call(select0));
-    			add_location(select0, file, 149, 6, 4011);
+    			add_location(select0, file, 147, 6, 3951);
     			attr_dev(input5, "class", "flex-grow-1");
     			attr_dev(input5, "type", "button");
     			input5.value = "OS値適用";
-    			add_location(input5, file, 154, 6, 4196);
-    			attr_dev(div4, "class", "hbox");
-    			add_location(div4, file, 148, 5, 3985);
-    			attr_dev(section5, "class", "svelte-18j7tw3");
-    			add_location(section5, file, 146, 4, 3940);
-    			attr_dev(div5, "class", "basicdamage panel padding svelte-18j7tw3");
-    			add_location(div5, file, 124, 3, 3103);
-    			add_location(h21, file, 160, 5, 4401);
+    			add_location(input5, file, 152, 6, 4136);
+    			attr_dev(div3, "class", "hbox");
+    			add_location(div3, file, 146, 5, 3925);
+    			attr_dev(section5, "class", "svelte-13yd3sg");
+    			add_location(section5, file, 144, 4, 3880);
+    			attr_dev(div4, "class", "basicdamage panel padding svelte-13yd3sg");
+    			add_location(div4, file, 122, 3, 3043);
+    			add_location(h21, file, 158, 5, 4341);
     			attr_dev(label5, "for", "legendValueSelector");
-    			add_location(label5, file, 162, 6, 4463);
+    			add_location(label5, file, 160, 6, 4403);
     			option0.__value = "0";
     			option0.value = option0.__value;
-    			add_location(option0, file, 164, 7, 4567);
+    			add_location(option0, file, 162, 7, 4507);
     			option1.__value = "1";
     			option1.value = option1.__value;
-    			add_location(option1, file, 165, 7, 4605);
+    			add_location(option1, file, 163, 7, 4545);
     			option2.__value = "2";
     			option2.value = option2.__value;
-    			add_location(option2, file, 166, 7, 4643);
+    			add_location(option2, file, 164, 7, 4583);
     			option3.__value = "3";
     			option3.value = option3.__value;
-    			add_location(option3, file, 167, 7, 4681);
+    			add_location(option3, file, 165, 7, 4621);
     			if (/*numLegendStone*/ ctx[5] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[24].call(select1));
-    			add_location(select1, file, 163, 6, 4522);
+    			add_location(select1, file, 161, 6, 4462);
     			attr_dev(section6, "class", "vbox margin-1/2em");
-    			add_location(section6, file, 161, 5, 4420);
+    			add_location(section6, file, 159, 5, 4360);
     			attr_dev(input6, "id", "ms1");
     			attr_dev(input6, "type", "checkbox");
-    			add_location(input6, file, 171, 6, 4768);
+    			add_location(input6, file, 169, 6, 4708);
     			attr_dev(label6, "for", "ms1");
-    			add_location(label6, file, 172, 6, 4847);
-    			add_location(section7, file, 170, 5, 4751);
+    			add_location(label6, file, 170, 6, 4787);
+    			add_location(section7, file, 168, 5, 4691);
     			attr_dev(input7, "id", "ms2");
     			attr_dev(input7, "type", "checkbox");
-    			add_location(input7, file, 175, 6, 4924);
+    			add_location(input7, file, 173, 6, 4864);
     			attr_dev(label7, "for", "ms2");
-    			add_location(label7, file, 176, 6, 5003);
-    			add_location(section8, file, 174, 5, 4907);
+    			add_location(label7, file, 174, 6, 4943);
+    			add_location(section8, file, 172, 5, 4847);
     			attr_dev(input8, "id", "ms3");
     			attr_dev(input8, "type", "checkbox");
-    			add_location(input8, file, 179, 6, 5080);
+    			add_location(input8, file, 177, 6, 5020);
     			attr_dev(label8, "for", "ms3");
-    			add_location(label8, file, 180, 6, 5159);
-    			add_location(section9, file, 178, 5, 5063);
+    			add_location(label8, file, 178, 6, 5099);
+    			add_location(section9, file, 176, 5, 5003);
     			attr_dev(input9, "id", "ms4");
     			attr_dev(input9, "type", "checkbox");
-    			add_location(input9, file, 183, 6, 5236);
+    			add_location(input9, file, 181, 6, 5176);
     			attr_dev(label9, "for", "ms4");
-    			add_location(label9, file, 184, 6, 5315);
-    			add_location(section10, file, 182, 5, 5219);
+    			add_location(label9, file, 182, 6, 5255);
+    			add_location(section10, file, 180, 5, 5159);
     			attr_dev(input10, "id", "ms4.5");
     			attr_dev(input10, "type", "checkbox");
-    			add_location(input10, file, 187, 6, 5392);
+    			add_location(input10, file, 185, 6, 5332);
     			attr_dev(label10, "for", "ms4.5");
-    			add_location(label10, file, 188, 6, 5475);
-    			add_location(section11, file, 186, 5, 5375);
+    			add_location(label10, file, 186, 6, 5415);
+    			add_location(section11, file, 184, 5, 5315);
     			attr_dev(input11, "id", "ms5");
     			attr_dev(input11, "type", "checkbox");
-    			add_location(input11, file, 191, 6, 5556);
+    			add_location(input11, file, 189, 6, 5496);
     			attr_dev(label11, "for", "ms5");
-    			add_location(label11, file, 192, 6, 5635);
-    			add_location(section12, file, 190, 5, 5539);
-    			attr_dev(div6, "class", "magicstone padding vbox");
-    			add_location(div6, file, 159, 4, 4357);
-    			add_location(h22, file, 196, 5, 5748);
+    			add_location(label11, file, 190, 6, 5575);
+    			add_location(section12, file, 188, 5, 5479);
+    			attr_dev(div5, "class", "magicstone padding vbox");
+    			add_location(div5, file, 157, 4, 4297);
+    			add_location(h22, file, 194, 5, 5688);
     			attr_dev(label12, "for", "skillSelector");
-    			add_location(label12, file, 198, 6, 5784);
+    			add_location(label12, file, 196, 6, 5724);
     			if (/*skill*/ ctx[7] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[31].call(select2));
-    			add_location(select2, file, 199, 6, 5830);
-    			attr_dev(section13, "class", "svelte-18j7tw3");
-    			add_location(section13, file, 197, 5, 5767);
+    			add_location(select2, file, 197, 6, 5770);
+    			attr_dev(section13, "class", "svelte-13yd3sg");
+    			add_location(section13, file, 195, 5, 5707);
     			attr_dev(label13, "for", "strengthEffectInput");
-    			add_location(label13, file, 206, 6, 6036);
+    			add_location(label13, file, 204, 6, 5976);
     			attr_dev(input12, "type", "number");
     			attr_dev(input12, "placeholder", "例:5");
-    			add_location(input12, file, 207, 6, 6097);
-    			attr_dev(section14, "class", "svelte-18j7tw3");
-    			add_location(section14, file, 205, 5, 6019);
-    			attr_dev(div7, "class", "othereffect svelte-18j7tw3");
-    			add_location(div7, file, 195, 4, 5716);
-    			attr_dev(div8, "class", "vbox panel svelte-18j7tw3");
-    			add_location(div8, file, 158, 3, 4327);
-    			attr_dev(div9, "class", "params space-around svelte-18j7tw3");
-    			add_location(div9, file, 123, 2, 3065);
+    			add_location(input12, file, 205, 6, 6037);
+    			attr_dev(section14, "class", "svelte-13yd3sg");
+    			add_location(section14, file, 203, 5, 5959);
+    			attr_dev(div6, "class", "othereffect svelte-13yd3sg");
+    			add_location(div6, file, 193, 4, 5656);
+    			attr_dev(div7, "class", "vbox panel svelte-13yd3sg");
+    			add_location(div7, file, 156, 3, 4267);
+    			attr_dev(div8, "class", "params space-around svelte-13yd3sg");
+    			add_location(div8, file, 121, 2, 3005);
     			attr_dev(p, "class", "text-center");
-    			add_location(p, file, 212, 2, 6214);
-    			attr_dev(div10, "class", "container vbox svelte-18j7tw3");
-    			add_location(div10, file, 109, 1, 2674);
+    			add_location(p, file, 210, 2, 6154);
+    			attr_dev(div9, "class", "container vbox svelte-13yd3sg");
+    			add_location(div9, file, 109, 1, 2674);
     			add_location(main, file, 108, 0, 2642);
     		},
     		l: function claim(nodes) {
@@ -1319,11 +1315,10 @@ var app = (function (exports) {
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
-    			append_dev(main, div10);
-    			append_dev(div10, h1);
-    			append_dev(div10, t1);
-    			append_dev(div10, div3);
-    			append_dev(div3, div2);
+    			append_dev(main, div9);
+    			append_dev(div9, h1);
+    			append_dev(div9, t1);
+    			append_dev(div9, div2);
     			append_dev(div2, div0);
     			append_dev(div0, h40);
     			append_dev(div0, t3);
@@ -1335,60 +1330,60 @@ var app = (function (exports) {
     			append_dev(div1, t7);
     			append_dev(div1, span1);
     			append_dev(span1, t8);
-    			append_dev(div10, t9);
-    			append_dev(div10, div9);
-    			append_dev(div9, div5);
-    			append_dev(div5, h20);
-    			append_dev(div5, t11);
-    			append_dev(div5, section0);
+    			append_dev(div9, t9);
+    			append_dev(div9, div8);
+    			append_dev(div8, div4);
+    			append_dev(div4, h20);
+    			append_dev(div4, t11);
+    			append_dev(div4, section0);
     			append_dev(section0, label0);
     			append_dev(section0, t13);
     			append_dev(section0, input0);
     			set_input_value(input0, /*weaponDamage*/ ctx[0]);
-    			append_dev(div5, t14);
-    			append_dev(div5, section1);
+    			append_dev(div4, t14);
+    			append_dev(div4, section1);
     			append_dev(section1, label1);
     			append_dev(section1, t16);
     			append_dev(section1, input1);
     			set_input_value(input1, /*specialDamage*/ ctx[1]);
-    			append_dev(div5, t17);
-    			append_dev(div5, section2);
+    			append_dev(div4, t17);
+    			append_dev(div4, section2);
     			append_dev(section2, label2);
     			append_dev(section2, t19);
     			append_dev(section2, input2);
     			set_input_value(input2, /*jobGain*/ ctx[3]);
-    			append_dev(div5, t20);
-    			append_dev(div5, section3);
+    			append_dev(div4, t20);
+    			append_dev(div4, section3);
     			append_dev(section3, label3);
     			append_dev(section3, t22);
     			append_dev(section3, input3);
     			set_input_value(input3, /*equipGain*/ ctx[4]);
-    			append_dev(div5, t23);
-    			append_dev(div5, section4);
+    			append_dev(div4, t23);
+    			append_dev(div4, section4);
     			append_dev(section4, label4);
     			append_dev(section4, t25);
     			append_dev(section4, input4);
     			set_input_value(input4, /*parkGain*/ ctx[2]);
-    			append_dev(div5, t26);
-    			append_dev(div5, section5);
+    			append_dev(div4, t26);
+    			append_dev(div4, section5);
     			append_dev(section5, span2);
     			append_dev(section5, t28);
-    			append_dev(section5, div4);
-    			append_dev(div4, select0);
+    			append_dev(section5, div3);
+    			append_dev(div3, select0);
 
     			for (let i = 0; i < each_blocks_1.length; i += 1) {
     				each_blocks_1[i].m(select0, null);
     			}
 
     			select_option(select0, /*overStrength*/ ctx[12]);
-    			append_dev(div4, t29);
-    			append_dev(div4, input5);
-    			append_dev(div9, t30);
-    			append_dev(div9, div8);
-    			append_dev(div8, div6);
-    			append_dev(div6, h21);
-    			append_dev(div6, t32);
-    			append_dev(div6, section6);
+    			append_dev(div3, t29);
+    			append_dev(div3, input5);
+    			append_dev(div8, t30);
+    			append_dev(div8, div7);
+    			append_dev(div7, div5);
+    			append_dev(div5, h21);
+    			append_dev(div5, t32);
+    			append_dev(div5, section6);
     			append_dev(section6, label5);
     			append_dev(section6, t34);
     			append_dev(section6, select1);
@@ -1397,47 +1392,47 @@ var app = (function (exports) {
     			append_dev(select1, option2);
     			append_dev(select1, option3);
     			select_option(select1, /*numLegendStone*/ ctx[5]);
-    			append_dev(div6, t39);
-    			append_dev(div6, section7);
+    			append_dev(div5, t39);
+    			append_dev(div5, section7);
     			append_dev(section7, input6);
     			input6.checked = /*magicStone*/ ctx[6]["level_1"];
     			append_dev(section7, t40);
     			append_dev(section7, label6);
-    			append_dev(div6, t42);
-    			append_dev(div6, section8);
+    			append_dev(div5, t42);
+    			append_dev(div5, section8);
     			append_dev(section8, input7);
     			input7.checked = /*magicStone*/ ctx[6]["level_2"];
     			append_dev(section8, t43);
     			append_dev(section8, label7);
-    			append_dev(div6, t45);
-    			append_dev(div6, section9);
+    			append_dev(div5, t45);
+    			append_dev(div5, section9);
     			append_dev(section9, input8);
     			input8.checked = /*magicStone*/ ctx[6]["level_3"];
     			append_dev(section9, t46);
     			append_dev(section9, label8);
-    			append_dev(div6, t48);
-    			append_dev(div6, section10);
+    			append_dev(div5, t48);
+    			append_dev(div5, section10);
     			append_dev(section10, input9);
     			input9.checked = /*magicStone*/ ctx[6]["level_4"];
     			append_dev(section10, t49);
     			append_dev(section10, label9);
-    			append_dev(div6, t51);
-    			append_dev(div6, section11);
+    			append_dev(div5, t51);
+    			append_dev(div5, section11);
     			append_dev(section11, input10);
     			input10.checked = /*magicStone*/ ctx[6]["level_4.5"];
     			append_dev(section11, t52);
     			append_dev(section11, label10);
-    			append_dev(div6, t54);
-    			append_dev(div6, section12);
+    			append_dev(div5, t54);
+    			append_dev(div5, section12);
     			append_dev(section12, input11);
     			input11.checked = /*magicStone*/ ctx[6]["level_5"];
     			append_dev(section12, t55);
     			append_dev(section12, label11);
-    			append_dev(div8, t57);
-    			append_dev(div8, div7);
-    			append_dev(div7, h22);
-    			append_dev(div7, t59);
-    			append_dev(div7, section13);
+    			append_dev(div7, t57);
+    			append_dev(div7, div6);
+    			append_dev(div6, h22);
+    			append_dev(div6, t59);
+    			append_dev(div6, section13);
     			append_dev(section13, label12);
     			append_dev(section13, t61);
     			append_dev(section13, select2);
@@ -1447,16 +1442,16 @@ var app = (function (exports) {
     			}
 
     			select_option(select2, /*skill*/ ctx[7]);
-    			append_dev(div7, t62);
-    			append_dev(div7, section14);
+    			append_dev(div6, t62);
+    			append_dev(div6, section14);
     			append_dev(section14, label13);
     			append_dev(section14, t64);
     			append_dev(section14, input12);
     			set_input_value(input12, /*strLevel*/ ctx[8]);
-    			append_dev(div10, t65);
-    			append_dev(div10, p);
-    			append_dev(div10, t67);
-    			mount_component(themebutton, div10, null);
+    			append_dev(div9, t65);
+    			append_dev(div9, p);
+    			append_dev(div9, t67);
+    			mount_component(themebutton, div9, null);
     			current = true;
 
     			if (!mounted) {

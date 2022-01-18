@@ -109,16 +109,14 @@
 <main on:load={applyTheme()}>
 	<div class="container vbox">
 		<h1>Thelowダメージ計算</h1>
-		<div class="result vbox padding">
-			<div class="hbox space-around">
-				<div class="vbox">
-					<h4>通常</h4>
-					<span class="text-big">{$normalResult.toFixed(2)}</span>
-				</div>
-				<div class="vbox">
-					<h4>クリティカル</h4>
-					<span class="text-big">{$criticalResult.toFixed(2)}</span>
-				</div>
+		<div class="result padding">
+			<div class="vbox">
+				<h4>通常</h4>
+				<span class="text-big">{$normalResult.toFixed(2)}</span>
+			</div>
+			<div class="vbox">
+				<h4>クリティカル</h4>
+				<span class="text-big">{$criticalResult.toFixed(2)}</span>
 			</div>
 		</div>
 		<div class="params space-around">
@@ -227,6 +225,13 @@
 		min-height: 100vh;
 	}
 
+	.result {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		text-align: center;
+	}
+
 	@media screen and (max-width: 640px) {
 		.params {
 			display: flex;
@@ -234,6 +239,10 @@
 		}
 		.container {
 			margin: 0 0.4em;
+		}
+
+		.result {
+			flex-direction: column;
 		}
 	}
 
@@ -256,10 +265,5 @@
 		display: flex;
 		flex-direction: column;
 		margin: 0.5em;
-	}
-
-	.result {
-		justify-content: center;
-		text-align: center;
 	}
 </style>
