@@ -1,4 +1,6 @@
 <script>
+	import { tweened } from "svelte/motion";
+	import { quartOut } from "svelte/easing";
 	import ThemeButton from "./component/ThemeButton.svelte";
 	import { applyTheme } from "./main";
 
@@ -25,10 +27,17 @@
 	export let skill = "general_attack";
 	export let strLevel = 0;
 
-	let result = {
-		normal: 0,
-		critical: 0,
-	};
+	const normalResult = tweened(0, {
+		delay: 200,
+		duration: 1000,
+		easing: quartOut,
+	});
+
+	const criticalResult = tweened(0, {
+		delay: 200,
+		duration: 1000,
+		easing: quartOut,
+	});
 
 	let magicStoneScales = {
 		level_1: 1.1,
@@ -57,7 +66,8 @@
 		scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
 		scale *= 1.06 ** Number(numLegendStone);
 
-		result.normal = normal * scale;
+		normalResult.set(normal * scale);
+		criticalResult.set(normal * scale * 1.15);
 
 		updateURLParameters();
 	}
@@ -103,11 +113,11 @@
 			<div class="hbox space-around">
 				<div class="vbox">
 					<h4>通常</h4>
-					<span class="text-big">{result.normal.toFixed(2)}</span>
+					<span class="text-big">{$normalResult.toFixed(2)}</span>
 				</div>
 				<div class="vbox">
 					<h4>クリティカル</h4>
-					<span class="text-big">{result.critical.toFixed(2)}</span>
+					<span class="text-big">{$criticalResult.toFixed(2)}</span>
 				</div>
 			</div>
 		</div>

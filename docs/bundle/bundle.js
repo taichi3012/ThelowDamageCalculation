@@ -4,6 +4,13 @@ var app = (function (exports) {
     'use strict';
 
     function noop() { }
+    const identity = x => x;
+    function assign(tar, src) {
+        // @ts-ignore
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -26,6 +33,56 @@ var app = (function (exports) {
     }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
+    }
+    function validate_store(store, name) {
+        if (store != null && typeof store.subscribe !== 'function') {
+            throw new Error(`'${name}' is not a store with a 'subscribe' method`);
+        }
+    }
+    function subscribe(store, ...callbacks) {
+        if (store == null) {
+            return noop;
+        }
+        const unsub = store.subscribe(...callbacks);
+        return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
+    }
+    function component_subscribe(component, store, callback) {
+        component.$$.on_destroy.push(subscribe(store, callback));
+    }
+
+    const is_client = typeof window !== 'undefined';
+    let now = is_client
+        ? () => window.performance.now()
+        : () => Date.now();
+    let raf = is_client ? cb => requestAnimationFrame(cb) : noop;
+
+    const tasks = new Set();
+    function run_tasks(now) {
+        tasks.forEach(task => {
+            if (!task.c(now)) {
+                tasks.delete(task);
+                task.f();
+            }
+        });
+        if (tasks.size !== 0)
+            raf(run_tasks);
+    }
+    /**
+     * Creates a new task that runs on each raf frame
+     * until it returns a falsy value or is aborted
+     */
+    function loop(callback) {
+        let task;
+        if (tasks.size === 0)
+            raf(run_tasks);
+        return {
+            promise: new Promise(fulfill => {
+                tasks.add(task = { c: callback, f: fulfill });
+            }),
+            abort() {
+                tasks.delete(task);
+            }
+        };
     }
     function append(target, node) {
         target.appendChild(node);
@@ -431,6 +488,157 @@ var app = (function (exports) {
         $inject_state() { }
     }
 
+    const subscriber_queue = [];
+    /**
+     * Create a `Writable` store that allows both updating and reading by subscription.
+     * @param {*=}value initial value
+     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     */
+    function writable(value, start = noop) {
+        let stop;
+        const subscribers = new Set();
+        function set(new_value) {
+            if (safe_not_equal(value, new_value)) {
+                value = new_value;
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (const subscriber of subscribers) {
+                        subscriber[1]();
+                        subscriber_queue.push(subscriber, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
+                }
+            }
+        }
+        function update(fn) {
+            set(fn(value));
+        }
+        function subscribe(run, invalidate = noop) {
+            const subscriber = [run, invalidate];
+            subscribers.add(subscriber);
+            if (subscribers.size === 1) {
+                stop = start(set) || noop;
+            }
+            run(value);
+            return () => {
+                subscribers.delete(subscriber);
+                if (subscribers.size === 0) {
+                    stop();
+                    stop = null;
+                }
+            };
+        }
+        return { set, update, subscribe };
+    }
+
+    function quartOut(t) {
+        return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0;
+    }
+
+    function is_date(obj) {
+        return Object.prototype.toString.call(obj) === '[object Date]';
+    }
+
+    function get_interpolator(a, b) {
+        if (a === b || a !== a)
+            return () => a;
+        const type = typeof a;
+        if (type !== typeof b || Array.isArray(a) !== Array.isArray(b)) {
+            throw new Error('Cannot interpolate values of different type');
+        }
+        if (Array.isArray(a)) {
+            const arr = b.map((bi, i) => {
+                return get_interpolator(a[i], bi);
+            });
+            return t => arr.map(fn => fn(t));
+        }
+        if (type === 'object') {
+            if (!a || !b)
+                throw new Error('Object cannot be null');
+            if (is_date(a) && is_date(b)) {
+                a = a.getTime();
+                b = b.getTime();
+                const delta = b - a;
+                return t => new Date(a + t * delta);
+            }
+            const keys = Object.keys(b);
+            const interpolators = {};
+            keys.forEach(key => {
+                interpolators[key] = get_interpolator(a[key], b[key]);
+            });
+            return t => {
+                const result = {};
+                keys.forEach(key => {
+                    result[key] = interpolators[key](t);
+                });
+                return result;
+            };
+        }
+        if (type === 'number') {
+            const delta = b - a;
+            return t => a + t * delta;
+        }
+        throw new Error(`Cannot interpolate ${type} values`);
+    }
+    function tweened(value, defaults = {}) {
+        const store = writable(value);
+        let task;
+        let target_value = value;
+        function set(new_value, opts) {
+            if (value == null) {
+                store.set(value = new_value);
+                return Promise.resolve();
+            }
+            target_value = new_value;
+            let previous_task = task;
+            let started = false;
+            let { delay = 0, duration = 400, easing = identity, interpolate = get_interpolator } = assign(assign({}, defaults), opts);
+            if (duration === 0) {
+                if (previous_task) {
+                    previous_task.abort();
+                    previous_task = null;
+                }
+                store.set(value = target_value);
+                return Promise.resolve();
+            }
+            const start = now() + delay;
+            let fn;
+            task = loop(now => {
+                if (now < start)
+                    return true;
+                if (!started) {
+                    fn = interpolate(value, new_value);
+                    if (typeof duration === 'function')
+                        duration = duration(value, new_value);
+                    started = true;
+                }
+                if (previous_task) {
+                    previous_task.abort();
+                    previous_task = null;
+                }
+                const elapsed = now - start;
+                if (elapsed > duration) {
+                    store.set(value = new_value);
+                    return false;
+                }
+                // @ts-ignore
+                store.set(value = fn(easing(elapsed / duration)));
+                return true;
+            });
+            return task.promise;
+        }
+        return {
+            set,
+            update: (fn, opts) => set(fn(target_value, value), opts),
+            subscribe: store.subscribe
+        };
+    }
+
     /* src\component\ThemeButton.svelte generated by Svelte v3.46.2 */
     const file$1 = "src\\component\\ThemeButton.svelte";
 
@@ -568,18 +776,18 @@ var app = (function (exports) {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[33] = list[i];
+    	child_ctx[36] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[36] = list[i];
-    	child_ctx[38] = i;
+    	child_ctx[39] = list[i];
+    	child_ctx[41] = i;
     	return child_ctx;
     }
 
-    // (141:7) {#each over_strength_values as _, i}
+    // (151:7) {#each over_strength_values as _, i}
     function create_each_block_1(ctx) {
     	let option;
     	let t;
@@ -587,10 +795,10 @@ var app = (function (exports) {
     	const block = {
     		c: function create() {
     			option = element("option");
-    			t = text(/*i*/ ctx[38]);
-    			option.__value = `${/*i*/ ctx[38]}`;
+    			t = text(/*i*/ ctx[41]);
+    			option.__value = `${/*i*/ ctx[41]}`;
     			option.value = option.__value;
-    			add_location(option, file, 141, 8, 3837);
+    			add_location(option, file, 151, 8, 4118);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -606,17 +814,17 @@ var app = (function (exports) {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(141:7) {#each over_strength_values as _, i}",
+    		source: "(151:7) {#each over_strength_values as _, i}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (191:7) {#each Object.keys(skill_data) as id}
+    // (201:7) {#each Object.keys(skill_data) as id}
     function create_each_block(ctx) {
     	let option;
-    	let t_value = /*skill_data*/ ctx[10][/*id*/ ctx[33]].name + "";
+    	let t_value = /*skill_data*/ ctx[10][/*id*/ ctx[36]].name + "";
     	let t;
     	let option_value_value;
 
@@ -624,18 +832,18 @@ var app = (function (exports) {
     		c: function create() {
     			option = element("option");
     			t = text(t_value);
-    			option.__value = option_value_value = /*id*/ ctx[33];
+    			option.__value = option_value_value = /*id*/ ctx[36];
     			option.value = option.__value;
-    			add_location(option, file, 191, 8, 5630);
+    			add_location(option, file, 201, 8, 5911);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
     			append_dev(option, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*skill_data*/ 1024 && t_value !== (t_value = /*skill_data*/ ctx[10][/*id*/ ctx[33]].name + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*skill_data*/ 1024 && t_value !== (t_value = /*skill_data*/ ctx[10][/*id*/ ctx[36]].name + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*skill_data*/ 1024 && option_value_value !== (option_value_value = /*id*/ ctx[33])) {
+    			if (dirty[0] & /*skill_data*/ 1024 && option_value_value !== (option_value_value = /*id*/ ctx[36])) {
     				prop_dev(option, "__value", option_value_value);
     				option.value = option.__value;
     			}
@@ -649,7 +857,7 @@ var app = (function (exports) {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(191:7) {#each Object.keys(skill_data) as id}",
+    		source: "(201:7) {#each Object.keys(skill_data) as id}",
     		ctx
     	});
 
@@ -667,14 +875,14 @@ var app = (function (exports) {
     	let h40;
     	let t3;
     	let span0;
-    	let t4_value = /*result*/ ctx[13].normal.toFixed(2) + "";
+    	let t4_value = /*$normalResult*/ ctx[13].toFixed(2) + "";
     	let t4;
     	let t5;
     	let div1;
     	let h41;
     	let t7;
     	let span1;
-    	let t8_value = /*result*/ ctx[13].critical.toFixed(2) + "";
+    	let t8_value = /*$criticalResult*/ ctx[14].toFixed(2) + "";
     	let t8;
     	let t9;
     	let div9;
@@ -794,7 +1002,7 @@ var app = (function (exports) {
     	}
 
     	function themebutton_darkMode_binding(value) {
-    		/*themebutton_darkMode_binding*/ ctx[30](value);
+    		/*themebutton_darkMode_binding*/ ctx[33](value);
     	}
 
     	let themebutton_props = {};
@@ -958,153 +1166,153 @@ var app = (function (exports) {
     			p.textContent = "※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。";
     			t67 = space();
     			create_component(themebutton.$$.fragment);
-    			add_location(h1, file, 100, 2, 2425);
-    			add_location(h40, file, 104, 5, 2550);
+    			add_location(h1, file, 110, 2, 2706);
+    			add_location(h40, file, 114, 5, 2831);
     			attr_dev(span0, "class", "text-big");
-    			add_location(span0, file, 105, 5, 2568);
+    			add_location(span0, file, 115, 5, 2849);
     			attr_dev(div0, "class", "vbox");
-    			add_location(div0, file, 103, 4, 2525);
-    			add_location(h41, file, 108, 5, 2667);
+    			add_location(div0, file, 113, 4, 2806);
+    			add_location(h41, file, 118, 5, 2948);
     			attr_dev(span1, "class", "text-big");
-    			add_location(span1, file, 109, 5, 2689);
+    			add_location(span1, file, 119, 5, 2970);
     			attr_dev(div1, "class", "vbox");
-    			add_location(div1, file, 107, 4, 2642);
+    			add_location(div1, file, 117, 4, 2923);
     			attr_dev(div2, "class", "hbox space-around");
-    			add_location(div2, file, 102, 3, 2488);
+    			add_location(div2, file, 112, 3, 2769);
     			attr_dev(div3, "class", "result vbox padding svelte-7wyjwt");
-    			add_location(div3, file, 101, 2, 2450);
-    			add_location(h20, file, 115, 4, 2865);
+    			add_location(div3, file, 111, 2, 2731);
+    			add_location(h20, file, 125, 4, 3146);
     			attr_dev(label0, "for", "weaponDamageInput");
-    			add_location(label0, file, 117, 5, 2902);
+    			add_location(label0, file, 127, 5, 3183);
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "placeholder", "例:300");
-    			add_location(input0, file, 118, 5, 2956);
+    			add_location(input0, file, 128, 5, 3237);
     			attr_dev(section0, "class", "svelte-7wyjwt");
-    			add_location(section0, file, 116, 4, 2886);
+    			add_location(section0, file, 126, 4, 3167);
     			attr_dev(label1, "for", "specialDamageInput");
-    			add_location(label1, file, 121, 5, 3063);
+    			add_location(label1, file, 131, 5, 3344);
     			attr_dev(input1, "type", "number");
     			attr_dev(input1, "placeholder", "例:50");
-    			add_location(input1, file, 122, 5, 3113);
+    			add_location(input1, file, 132, 5, 3394);
     			attr_dev(section1, "class", "svelte-7wyjwt");
-    			add_location(section1, file, 120, 4, 3047);
+    			add_location(section1, file, 130, 4, 3328);
     			attr_dev(label2, "for", "jobGainInput");
-    			add_location(label2, file, 125, 5, 3220);
+    			add_location(label2, file, 135, 5, 3501);
     			attr_dev(input2, "type", "number");
     			attr_dev(input2, "placeholder", "例:10");
-    			add_location(input2, file, 126, 5, 3268);
+    			add_location(input2, file, 136, 5, 3549);
     			attr_dev(section2, "class", "svelte-7wyjwt");
-    			add_location(section2, file, 124, 4, 3204);
+    			add_location(section2, file, 134, 4, 3485);
     			attr_dev(label3, "for", "equipGainInput");
-    			add_location(label3, file, 129, 5, 3369);
+    			add_location(label3, file, 139, 5, 3650);
     			attr_dev(input3, "type", "number");
     			attr_dev(input3, "placeholder", "例:10");
-    			add_location(input3, file, 130, 5, 3419);
+    			add_location(input3, file, 140, 5, 3700);
     			attr_dev(section3, "class", "svelte-7wyjwt");
-    			add_location(section3, file, 128, 4, 3353);
+    			add_location(section3, file, 138, 4, 3634);
     			attr_dev(label4, "for", "parkGainInput");
-    			add_location(label4, file, 133, 5, 3522);
+    			add_location(label4, file, 143, 5, 3803);
     			attr_dev(input4, "type", "number");
     			attr_dev(input4, "placeholder", "例:140");
-    			add_location(input4, file, 134, 5, 3570);
+    			add_location(input4, file, 144, 5, 3851);
     			attr_dev(section4, "class", "svelte-7wyjwt");
-    			add_location(section4, file, 132, 4, 3506);
-    			add_location(span2, file, 137, 5, 3673);
+    			add_location(section4, file, 142, 4, 3787);
+    			add_location(span2, file, 147, 5, 3954);
     			attr_dev(select0, "class", "flex-grow-3");
-    			if (/*overStrength*/ ctx[12] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[20].call(select0));
-    			add_location(select0, file, 139, 6, 3728);
+    			if (/*overStrength*/ ctx[12] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[23].call(select0));
+    			add_location(select0, file, 149, 6, 4009);
     			attr_dev(input5, "class", "flex-grow-1");
     			attr_dev(input5, "type", "button");
     			input5.value = "OS値適用";
-    			add_location(input5, file, 144, 6, 3913);
+    			add_location(input5, file, 154, 6, 4194);
     			attr_dev(div4, "class", "hbox");
-    			add_location(div4, file, 138, 5, 3702);
+    			add_location(div4, file, 148, 5, 3983);
     			attr_dev(section5, "class", "svelte-7wyjwt");
-    			add_location(section5, file, 136, 4, 3657);
+    			add_location(section5, file, 146, 4, 3938);
     			attr_dev(div5, "class", "basicdamage panel padding svelte-7wyjwt");
-    			add_location(div5, file, 114, 3, 2820);
-    			add_location(h21, file, 150, 5, 4118);
+    			add_location(div5, file, 124, 3, 3101);
+    			add_location(h21, file, 160, 5, 4399);
     			attr_dev(label5, "for", "legendValueSelector");
-    			add_location(label5, file, 152, 6, 4180);
+    			add_location(label5, file, 162, 6, 4461);
     			option0.__value = "0";
     			option0.value = option0.__value;
-    			add_location(option0, file, 154, 7, 4284);
+    			add_location(option0, file, 164, 7, 4565);
     			option1.__value = "1";
     			option1.value = option1.__value;
-    			add_location(option1, file, 155, 7, 4322);
+    			add_location(option1, file, 165, 7, 4603);
     			option2.__value = "2";
     			option2.value = option2.__value;
-    			add_location(option2, file, 156, 7, 4360);
+    			add_location(option2, file, 166, 7, 4641);
     			option3.__value = "3";
     			option3.value = option3.__value;
-    			add_location(option3, file, 157, 7, 4398);
-    			if (/*numLegendStone*/ ctx[5] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[21].call(select1));
-    			add_location(select1, file, 153, 6, 4239);
+    			add_location(option3, file, 167, 7, 4679);
+    			if (/*numLegendStone*/ ctx[5] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[24].call(select1));
+    			add_location(select1, file, 163, 6, 4520);
     			attr_dev(section6, "class", "vbox margin-1/2em");
-    			add_location(section6, file, 151, 5, 4137);
+    			add_location(section6, file, 161, 5, 4418);
     			attr_dev(input6, "id", "ms1");
     			attr_dev(input6, "type", "checkbox");
-    			add_location(input6, file, 161, 6, 4485);
+    			add_location(input6, file, 171, 6, 4766);
     			attr_dev(label6, "for", "ms1");
-    			add_location(label6, file, 162, 6, 4564);
-    			add_location(section7, file, 160, 5, 4468);
+    			add_location(label6, file, 172, 6, 4845);
+    			add_location(section7, file, 170, 5, 4749);
     			attr_dev(input7, "id", "ms2");
     			attr_dev(input7, "type", "checkbox");
-    			add_location(input7, file, 165, 6, 4641);
+    			add_location(input7, file, 175, 6, 4922);
     			attr_dev(label7, "for", "ms2");
-    			add_location(label7, file, 166, 6, 4720);
-    			add_location(section8, file, 164, 5, 4624);
+    			add_location(label7, file, 176, 6, 5001);
+    			add_location(section8, file, 174, 5, 4905);
     			attr_dev(input8, "id", "ms3");
     			attr_dev(input8, "type", "checkbox");
-    			add_location(input8, file, 169, 6, 4797);
+    			add_location(input8, file, 179, 6, 5078);
     			attr_dev(label8, "for", "ms3");
-    			add_location(label8, file, 170, 6, 4876);
-    			add_location(section9, file, 168, 5, 4780);
+    			add_location(label8, file, 180, 6, 5157);
+    			add_location(section9, file, 178, 5, 5061);
     			attr_dev(input9, "id", "ms4");
     			attr_dev(input9, "type", "checkbox");
-    			add_location(input9, file, 173, 6, 4953);
+    			add_location(input9, file, 183, 6, 5234);
     			attr_dev(label9, "for", "ms4");
-    			add_location(label9, file, 174, 6, 5032);
-    			add_location(section10, file, 172, 5, 4936);
+    			add_location(label9, file, 184, 6, 5313);
+    			add_location(section10, file, 182, 5, 5217);
     			attr_dev(input10, "id", "ms4.5");
     			attr_dev(input10, "type", "checkbox");
-    			add_location(input10, file, 177, 6, 5109);
+    			add_location(input10, file, 187, 6, 5390);
     			attr_dev(label10, "for", "ms4.5");
-    			add_location(label10, file, 178, 6, 5192);
-    			add_location(section11, file, 176, 5, 5092);
+    			add_location(label10, file, 188, 6, 5473);
+    			add_location(section11, file, 186, 5, 5373);
     			attr_dev(input11, "id", "ms5");
     			attr_dev(input11, "type", "checkbox");
-    			add_location(input11, file, 181, 6, 5273);
+    			add_location(input11, file, 191, 6, 5554);
     			attr_dev(label11, "for", "ms5");
-    			add_location(label11, file, 182, 6, 5352);
-    			add_location(section12, file, 180, 5, 5256);
+    			add_location(label11, file, 192, 6, 5633);
+    			add_location(section12, file, 190, 5, 5537);
     			attr_dev(div6, "class", "magicstone padding vbox");
-    			add_location(div6, file, 149, 4, 4074);
-    			add_location(h22, file, 186, 5, 5465);
+    			add_location(div6, file, 159, 4, 4355);
+    			add_location(h22, file, 196, 5, 5746);
     			attr_dev(label12, "for", "skillSelector");
-    			add_location(label12, file, 188, 6, 5501);
-    			if (/*skill*/ ctx[7] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[28].call(select2));
-    			add_location(select2, file, 189, 6, 5547);
+    			add_location(label12, file, 198, 6, 5782);
+    			if (/*skill*/ ctx[7] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[31].call(select2));
+    			add_location(select2, file, 199, 6, 5828);
     			attr_dev(section13, "class", "svelte-7wyjwt");
-    			add_location(section13, file, 187, 5, 5484);
+    			add_location(section13, file, 197, 5, 5765);
     			attr_dev(label13, "for", "strengthEffectInput");
-    			add_location(label13, file, 196, 6, 5753);
+    			add_location(label13, file, 206, 6, 6034);
     			attr_dev(input12, "type", "number");
     			attr_dev(input12, "placeholder", "例:5");
-    			add_location(input12, file, 197, 6, 5814);
+    			add_location(input12, file, 207, 6, 6095);
     			attr_dev(section14, "class", "svelte-7wyjwt");
-    			add_location(section14, file, 195, 5, 5736);
+    			add_location(section14, file, 205, 5, 6017);
     			attr_dev(div7, "class", "othereffect svelte-7wyjwt");
-    			add_location(div7, file, 185, 4, 5433);
+    			add_location(div7, file, 195, 4, 5714);
     			attr_dev(div8, "class", "vbox panel svelte-7wyjwt");
-    			add_location(div8, file, 148, 3, 4044);
+    			add_location(div8, file, 158, 3, 4325);
     			attr_dev(div9, "class", "hbox space-around");
-    			add_location(div9, file, 113, 2, 2784);
+    			add_location(div9, file, 123, 2, 3065);
     			attr_dev(p, "class", "text-center");
-    			add_location(p, file, 202, 2, 5931);
+    			add_location(p, file, 212, 2, 6212);
     			attr_dev(div10, "class", "container vbox svelte-7wyjwt");
-    			add_location(div10, file, 99, 1, 2393);
-    			add_location(main, file, 98, 0, 2361);
+    			add_location(div10, file, 109, 1, 2674);
+    			add_location(main, file, 108, 0, 2642);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1253,22 +1461,22 @@ var app = (function (exports) {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[15]),
-    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[16]),
-    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[17]),
-    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[18]),
-    					listen_dev(input4, "input", /*input4_input_handler*/ ctx[19]),
-    					listen_dev(select0, "change", /*select0_change_handler*/ ctx[20]),
-    					listen_dev(input5, "click", /*applyOverStrength*/ ctx[14], false, false, false),
-    					listen_dev(select1, "change", /*select1_change_handler*/ ctx[21]),
-    					listen_dev(input6, "change", /*input6_change_handler*/ ctx[22]),
-    					listen_dev(input7, "change", /*input7_change_handler*/ ctx[23]),
-    					listen_dev(input8, "change", /*input8_change_handler*/ ctx[24]),
-    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[25]),
-    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[26]),
-    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[27]),
-    					listen_dev(select2, "change", /*select2_change_handler*/ ctx[28]),
-    					listen_dev(input12, "input", /*input12_input_handler*/ ctx[29]),
+    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[18]),
+    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[19]),
+    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[20]),
+    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[21]),
+    					listen_dev(input4, "input", /*input4_input_handler*/ ctx[22]),
+    					listen_dev(select0, "change", /*select0_change_handler*/ ctx[23]),
+    					listen_dev(input5, "click", /*applyOverStrength*/ ctx[17], false, false, false),
+    					listen_dev(select1, "change", /*select1_change_handler*/ ctx[24]),
+    					listen_dev(input6, "change", /*input6_change_handler*/ ctx[25]),
+    					listen_dev(input7, "change", /*input7_change_handler*/ ctx[26]),
+    					listen_dev(input8, "change", /*input8_change_handler*/ ctx[27]),
+    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[28]),
+    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[29]),
+    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[30]),
+    					listen_dev(select2, "change", /*select2_change_handler*/ ctx[31]),
+    					listen_dev(input12, "input", /*input12_input_handler*/ ctx[32]),
     					listen_dev(main, "load", applyTheme(), false, false, false)
     				];
 
@@ -1276,8 +1484,8 @@ var app = (function (exports) {
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if ((!current || dirty[0] & /*result*/ 8192) && t4_value !== (t4_value = /*result*/ ctx[13].normal.toFixed(2) + "")) set_data_dev(t4, t4_value);
-    			if ((!current || dirty[0] & /*result*/ 8192) && t8_value !== (t8_value = /*result*/ ctx[13].critical.toFixed(2) + "")) set_data_dev(t8, t8_value);
+    			if ((!current || dirty[0] & /*$normalResult*/ 8192) && t4_value !== (t4_value = /*$normalResult*/ ctx[13].toFixed(2) + "")) set_data_dev(t4, t4_value);
+    			if ((!current || dirty[0] & /*$criticalResult*/ 16384) && t8_value !== (t8_value = /*$criticalResult*/ ctx[14].toFixed(2) + "")) set_data_dev(t8, t8_value);
 
     			if (dirty[0] & /*weaponDamage*/ 1 && to_number(input0.value) !== /*weaponDamage*/ ctx[0]) {
     				set_input_value(input0, /*weaponDamage*/ ctx[0]);
@@ -1428,6 +1636,8 @@ var app = (function (exports) {
     }
 
     function instance($$self, $$props, $$invalidate) {
+    	let $normalResult;
+    	let $criticalResult;
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let { skill_data } = $$props;
@@ -1452,7 +1662,24 @@ var app = (function (exports) {
 
     	let { skill = "general_attack" } = $$props;
     	let { strLevel = 0 } = $$props;
-    	let result = { normal: 0, critical: 0 };
+
+    	const normalResult = tweened(0, {
+    		delay: 200,
+    		duration: 1000,
+    		easing: quartOut
+    	});
+
+    	validate_store(normalResult, 'normalResult');
+    	component_subscribe($$self, normalResult, value => $$invalidate(13, $normalResult = value));
+
+    	const criticalResult = tweened(0, {
+    		delay: 200,
+    		duration: 1000,
+    		easing: quartOut
+    	});
+
+    	validate_store(criticalResult, 'criticalResult');
+    	component_subscribe($$self, criticalResult, value => $$invalidate(14, $criticalResult = value));
 
     	let magicStoneScales = {
     		level_1: 1.1,
@@ -1613,6 +1840,8 @@ var app = (function (exports) {
     	};
 
     	$$self.$capture_state = () => ({
+    		tweened,
+    		quartOut,
     		ThemeButton,
     		applyTheme,
     		skill_data,
@@ -1628,10 +1857,13 @@ var app = (function (exports) {
     		magicStone,
     		skill,
     		strLevel,
-    		result,
+    		normalResult,
+    		criticalResult,
     		magicStoneScales,
     		applyOverStrength,
-    		updateURLParameters
+    		updateURLParameters,
+    		$normalResult,
+    		$criticalResult
     	});
 
     	$$self.$inject_state = $$props => {
@@ -1648,8 +1880,7 @@ var app = (function (exports) {
     		if ('magicStone' in $$props) $$invalidate(6, magicStone = $$props.magicStone);
     		if ('skill' in $$props) $$invalidate(7, skill = $$props.skill);
     		if ('strLevel' in $$props) $$invalidate(8, strLevel = $$props.strLevel);
-    		if ('result' in $$props) $$invalidate(13, result = $$props.result);
-    		if ('magicStoneScales' in $$props) $$invalidate(31, magicStoneScales = $$props.magicStoneScales);
+    		if ('magicStoneScales' in $$props) $$invalidate(34, magicStoneScales = $$props.magicStoneScales);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -1676,7 +1907,8 @@ var app = (function (exports) {
     				scale *= skill_data[skill].multiply;
     				scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
     				scale *= 1.06 ** Number(numLegendStone);
-    				$$invalidate(13, result.normal = normal * scale, result);
+    				normalResult.set(normal * scale);
+    				criticalResult.set(normal * scale * 1.15);
     				updateURLParameters();
     			}
     		}
@@ -1696,7 +1928,10 @@ var app = (function (exports) {
     		skill_data,
     		over_strength_values,
     		overStrength,
-    		result,
+    		$normalResult,
+    		$criticalResult,
+    		normalResult,
+    		criticalResult,
     		applyOverStrength,
     		input0_input_handler,
     		input1_input_handler,
