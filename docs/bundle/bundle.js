@@ -1,9 +1,16 @@
 
 (function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
-var app = (function () {
+var app = (function (exports) {
     'use strict';
 
     function noop() { }
+    const identity = x => x;
+    function assign(tar, src) {
+        // @ts-ignore
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -26,6 +33,56 @@ var app = (function () {
     }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
+    }
+    function validate_store(store, name) {
+        if (store != null && typeof store.subscribe !== 'function') {
+            throw new Error(`'${name}' is not a store with a 'subscribe' method`);
+        }
+    }
+    function subscribe(store, ...callbacks) {
+        if (store == null) {
+            return noop;
+        }
+        const unsub = store.subscribe(...callbacks);
+        return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
+    }
+    function component_subscribe(component, store, callback) {
+        component.$$.on_destroy.push(subscribe(store, callback));
+    }
+
+    const is_client = typeof window !== 'undefined';
+    let now = is_client
+        ? () => window.performance.now()
+        : () => Date.now();
+    let raf = is_client ? cb => requestAnimationFrame(cb) : noop;
+
+    const tasks = new Set();
+    function run_tasks(now) {
+        tasks.forEach(task => {
+            if (!task.c(now)) {
+                tasks.delete(task);
+                task.f();
+            }
+        });
+        if (tasks.size !== 0)
+            raf(run_tasks);
+    }
+    /**
+     * Creates a new task that runs on each raf frame
+     * until it returns a falsy value or is aborted
+     */
+    function loop(callback) {
+        let task;
+        if (tasks.size === 0)
+            raf(run_tasks);
+        return {
+            promise: new Promise(fulfill => {
+                tasks.add(task = { c: callback, f: fulfill });
+            }),
+            abort() {
+                tasks.delete(task);
+            }
+        };
     }
     function append(target, node) {
         target.appendChild(node);
@@ -84,6 +141,9 @@ var app = (function () {
         const selected_option = select.querySelector(':checked') || select.options[0];
         return selected_option && selected_option.__value;
     }
+    function toggle_class(element, name, toggle) {
+        element.classList[toggle ? 'add' : 'remove'](name);
+    }
     function custom_event(type, detail, bubbles = false) {
         const e = document.createEvent('CustomEvent');
         e.initCustomEvent(type, bubbles, false, detail);
@@ -109,6 +169,9 @@ var app = (function () {
     }
     function add_render_callback(fn) {
         render_callbacks.push(fn);
+    }
+    function add_flush_callback(fn) {
+        flush_callbacks.push(fn);
     }
     // flush() calls callbacks in this order:
     // 1. All beforeUpdate callbacks, in order: parents before children
@@ -177,10 +240,27 @@ var app = (function () {
         }
     }
     const outroing = new Set();
+    let outros;
     function transition_in(block, local) {
         if (block && block.i) {
             outroing.delete(block);
             block.i(local);
+        }
+    }
+    function transition_out(block, local, detach, callback) {
+        if (block && block.o) {
+            if (outroing.has(block))
+                return;
+            outroing.add(block);
+            outros.c.push(() => {
+                outroing.delete(block);
+                if (callback) {
+                    if (detach)
+                        block.d(1);
+                    callback();
+                }
+            });
+            block.o(local);
         }
     }
 
@@ -189,6 +269,17 @@ var app = (function () {
         : typeof globalThis !== 'undefined'
             ? globalThis
             : global);
+
+    function bind(component, name, callback) {
+        const index = component.$$.props[name];
+        if (index !== undefined) {
+            component.$$.bound[index] = callback;
+            callback(component.$$.ctx[index]);
+        }
+    }
+    function create_component(block) {
+        block && block.c();
+    }
     function mount_component(component, target, anchor, customElement) {
         const { fragment, on_mount, on_destroy, after_update } = component.$$;
         fragment && fragment.m(target, anchor);
@@ -397,25 +488,306 @@ var app = (function () {
         $inject_state() { }
     }
 
+    const subscriber_queue = [];
+    /**
+     * Create a `Writable` store that allows both updating and reading by subscription.
+     * @param {*=}value initial value
+     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     */
+    function writable(value, start = noop) {
+        let stop;
+        const subscribers = new Set();
+        function set(new_value) {
+            if (safe_not_equal(value, new_value)) {
+                value = new_value;
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (const subscriber of subscribers) {
+                        subscriber[1]();
+                        subscriber_queue.push(subscriber, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
+                }
+            }
+        }
+        function update(fn) {
+            set(fn(value));
+        }
+        function subscribe(run, invalidate = noop) {
+            const subscriber = [run, invalidate];
+            subscribers.add(subscriber);
+            if (subscribers.size === 1) {
+                stop = start(set) || noop;
+            }
+            run(value);
+            return () => {
+                subscribers.delete(subscriber);
+                if (subscribers.size === 0) {
+                    stop();
+                    stop = null;
+                }
+            };
+        }
+        return { set, update, subscribe };
+    }
+
+    function quartOut(t) {
+        return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0;
+    }
+
+    function is_date(obj) {
+        return Object.prototype.toString.call(obj) === '[object Date]';
+    }
+
+    function get_interpolator(a, b) {
+        if (a === b || a !== a)
+            return () => a;
+        const type = typeof a;
+        if (type !== typeof b || Array.isArray(a) !== Array.isArray(b)) {
+            throw new Error('Cannot interpolate values of different type');
+        }
+        if (Array.isArray(a)) {
+            const arr = b.map((bi, i) => {
+                return get_interpolator(a[i], bi);
+            });
+            return t => arr.map(fn => fn(t));
+        }
+        if (type === 'object') {
+            if (!a || !b)
+                throw new Error('Object cannot be null');
+            if (is_date(a) && is_date(b)) {
+                a = a.getTime();
+                b = b.getTime();
+                const delta = b - a;
+                return t => new Date(a + t * delta);
+            }
+            const keys = Object.keys(b);
+            const interpolators = {};
+            keys.forEach(key => {
+                interpolators[key] = get_interpolator(a[key], b[key]);
+            });
+            return t => {
+                const result = {};
+                keys.forEach(key => {
+                    result[key] = interpolators[key](t);
+                });
+                return result;
+            };
+        }
+        if (type === 'number') {
+            const delta = b - a;
+            return t => a + t * delta;
+        }
+        throw new Error(`Cannot interpolate ${type} values`);
+    }
+    function tweened(value, defaults = {}) {
+        const store = writable(value);
+        let task;
+        let target_value = value;
+        function set(new_value, opts) {
+            if (value == null) {
+                store.set(value = new_value);
+                return Promise.resolve();
+            }
+            target_value = new_value;
+            let previous_task = task;
+            let started = false;
+            let { delay = 0, duration = 400, easing = identity, interpolate = get_interpolator } = assign(assign({}, defaults), opts);
+            if (duration === 0) {
+                if (previous_task) {
+                    previous_task.abort();
+                    previous_task = null;
+                }
+                store.set(value = target_value);
+                return Promise.resolve();
+            }
+            const start = now() + delay;
+            let fn;
+            task = loop(now => {
+                if (now < start)
+                    return true;
+                if (!started) {
+                    fn = interpolate(value, new_value);
+                    if (typeof duration === 'function')
+                        duration = duration(value, new_value);
+                    started = true;
+                }
+                if (previous_task) {
+                    previous_task.abort();
+                    previous_task = null;
+                }
+                const elapsed = now - start;
+                if (elapsed > duration) {
+                    store.set(value = new_value);
+                    return false;
+                }
+                // @ts-ignore
+                store.set(value = fn(easing(elapsed / duration)));
+                return true;
+            });
+            return task.promise;
+        }
+        return {
+            set,
+            update: (fn, opts) => set(fn(target_value, value), opts),
+            subscribe: store.subscribe
+        };
+    }
+
+    /* src\component\ThemeButton.svelte generated by Svelte v3.46.2 */
+    const file$1 = "src\\component\\ThemeButton.svelte";
+
+    function create_fragment$1(ctx) {
+    	let div;
+    	let span;
+    	let t_value = (/*darkMode*/ ctx[0] ? "dark_mode" : "light_mode") + "";
+    	let t;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			span = element("span");
+    			t = text(t_value);
+    			attr_dev(span, "class", "material-icons svelte-1161gb5");
+    			toggle_class(span, "dark", /*darkMode*/ ctx[0]);
+    			toggle_class(span, "light", !/*darkMode*/ ctx[0]);
+    			add_location(span, file$1, 13, 1, 248);
+    			attr_dev(div, "class", "svelte-1161gb5");
+    			add_location(div, file$1, 12, 0, 214);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, span);
+    			append_dev(span, t);
+
+    			if (!mounted) {
+    				dispose = listen_dev(div, "click", /*toggleDarkMode*/ ctx[1], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (dirty & /*darkMode*/ 1 && t_value !== (t_value = (/*darkMode*/ ctx[0] ? "dark_mode" : "light_mode") + "")) set_data_dev(t, t_value);
+
+    			if (dirty & /*darkMode*/ 1) {
+    				toggle_class(span, "dark", /*darkMode*/ ctx[0]);
+    			}
+
+    			if (dirty & /*darkMode*/ 1) {
+    				toggle_class(span, "light", !/*darkMode*/ ctx[0]);
+    			}
+    		},
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$1.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$1($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots('ThemeButton', slots, []);
+    	let { darkMode } = $$props;
+
+    	function toggleDarkMode() {
+    		$$invalidate(0, darkMode = !darkMode);
+    		localStorage.setItem("dark_mode", darkMode);
+    		applyTheme();
+    	}
+
+    	const writable_props = ['darkMode'];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<ThemeButton> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ('darkMode' in $$props) $$invalidate(0, darkMode = $$props.darkMode);
+    	};
+
+    	$$self.$capture_state = () => ({ applyTheme, darkMode, toggleDarkMode });
+
+    	$$self.$inject_state = $$props => {
+    		if ('darkMode' in $$props) $$invalidate(0, darkMode = $$props.darkMode);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [darkMode, toggleDarkMode];
+    }
+
+    class ThemeButton extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { darkMode: 0 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "ThemeButton",
+    			options,
+    			id: create_fragment$1.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*darkMode*/ ctx[0] === undefined && !('darkMode' in props)) {
+    			console.warn("<ThemeButton> was created without expected prop 'darkMode'");
+    		}
+    	}
+
+    	get darkMode() {
+    		throw new Error("<ThemeButton>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set darkMode(value) {
+    		throw new Error("<ThemeButton>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
     /* src\App.svelte generated by Svelte v3.46.2 */
 
-    const { Object: Object_1, console: console_1 } = globals;
+    const { Object: Object_1 } = globals;
     const file = "src\\App.svelte";
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[30] = list[i];
+    	child_ctx[36] = list[i];
     	return child_ctx;
     }
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[33] = list[i];
-    	child_ctx[35] = i;
+    	child_ctx[39] = list[i];
+    	child_ctx[41] = i;
     	return child_ctx;
     }
 
-    // (107:7) {#each over_strength_values as _, i}
+    // (149:7) {#each over_strength_values as _, i}
     function create_each_block_1(ctx) {
     	let option;
     	let t;
@@ -423,10 +795,10 @@ var app = (function () {
     	const block = {
     		c: function create() {
     			option = element("option");
-    			t = text(/*i*/ ctx[35]);
-    			option.__value = `${/*i*/ ctx[35]}`;
+    			t = text(/*i*/ ctx[41]);
+    			option.__value = `${/*i*/ ctx[41]}`;
     			option.value = option.__value;
-    			add_location(option, file, 107, 8, 2758);
+    			add_location(option, file, 149, 8, 4072);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -442,17 +814,17 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(107:7) {#each over_strength_values as _, i}",
+    		source: "(149:7) {#each over_strength_values as _, i}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (157:7) {#each Object.keys(skill_data) as id}
+    // (199:7) {#each Object.keys(skill_data) as id}
     function create_each_block(ctx) {
     	let option;
-    	let t_value = /*skill_data*/ ctx[0][/*id*/ ctx[30]].name + "";
+    	let t_value = /*skill_data*/ ctx[10][/*id*/ ctx[36]].name + "";
     	let t;
     	let option_value_value;
 
@@ -460,18 +832,18 @@ var app = (function () {
     		c: function create() {
     			option = element("option");
     			t = text(t_value);
-    			option.__value = option_value_value = /*id*/ ctx[30];
+    			option.__value = option_value_value = /*id*/ ctx[36];
     			option.value = option.__value;
-    			add_location(option, file, 157, 8, 4551);
+    			add_location(option, file, 199, 8, 5865);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
     			append_dev(option, t);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*skill_data*/ 1 && t_value !== (t_value = /*skill_data*/ ctx[0][/*id*/ ctx[30]].name + "")) set_data_dev(t, t_value);
+    			if (dirty[0] & /*skill_data*/ 1024 && t_value !== (t_value = /*skill_data*/ ctx[10][/*id*/ ctx[36]].name + "")) set_data_dev(t, t_value);
 
-    			if (dirty[0] & /*skill_data*/ 1 && option_value_value !== (option_value_value = /*id*/ ctx[30])) {
+    			if (dirty[0] & /*skill_data*/ 1024 && option_value_value !== (option_value_value = /*id*/ ctx[36])) {
     				prop_dev(option, "__value", option_value_value);
     				option.value = option.__value;
     			}
@@ -485,7 +857,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(157:7) {#each Object.keys(skill_data) as id}",
+    		source: "(199:7) {#each Object.keys(skill_data) as id}",
     		ctx
     	});
 
@@ -494,27 +866,26 @@ var app = (function () {
 
     function create_fragment(ctx) {
     	let main;
-    	let div10;
+    	let div9;
     	let h1;
     	let t1;
-    	let div3;
     	let div2;
     	let div0;
-    	let h40;
+    	let small0;
     	let t3;
     	let span0;
-    	let t4_value = /*result*/ ctx[12].normal.toFixed(2) + "";
+    	let t4_value = /*$normalResult*/ ctx[13].toFixed(2) + "";
     	let t4;
     	let t5;
     	let div1;
-    	let h41;
+    	let small1;
     	let t7;
     	let span1;
-    	let t8_value = /*result*/ ctx[12].critical.toFixed(2) + "";
+    	let t8_value = /*$criticalResult*/ ctx[14].toFixed(2) + "";
     	let t8;
     	let t9;
-    	let div9;
-    	let div5;
+    	let div8;
+    	let div4;
     	let h20;
     	let t11;
     	let section0;
@@ -545,13 +916,13 @@ var app = (function () {
     	let section5;
     	let span2;
     	let t28;
-    	let div4;
+    	let div3;
     	let select0;
     	let t29;
     	let input5;
     	let t30;
-    	let div8;
-    	let div6;
+    	let div7;
+    	let div5;
     	let h21;
     	let t32;
     	let section6;
@@ -593,7 +964,7 @@ var app = (function () {
     	let t55;
     	let label11;
     	let t57;
-    	let div7;
+    	let div6;
     	let h22;
     	let t59;
     	let section13;
@@ -607,9 +978,13 @@ var app = (function () {
     	let input12;
     	let t65;
     	let p;
+    	let t67;
+    	let themebutton;
+    	let updating_darkMode;
+    	let current;
     	let mounted;
     	let dispose;
-    	let each_value_1 = /*over_strength_values*/ ctx[1];
+    	let each_value_1 = /*over_strength_values*/ ctx[11];
     	validate_each_argument(each_value_1);
     	let each_blocks_1 = [];
 
@@ -617,7 +992,7 @@ var app = (function () {
     		each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
     	}
 
-    	let each_value = Object.keys(/*skill_data*/ ctx[0]);
+    	let each_value = Object.keys(/*skill_data*/ ctx[10]);
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -625,31 +1000,43 @@ var app = (function () {
     		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
     	}
 
+    	function themebutton_darkMode_binding(value) {
+    		/*themebutton_darkMode_binding*/ ctx[33](value);
+    	}
+
+    	let themebutton_props = {};
+
+    	if (/*darkMode*/ ctx[9] !== void 0) {
+    		themebutton_props.darkMode = /*darkMode*/ ctx[9];
+    	}
+
+    	themebutton = new ThemeButton({ props: themebutton_props, $$inline: true });
+    	binding_callbacks.push(() => bind(themebutton, 'darkMode', themebutton_darkMode_binding));
+
     	const block = {
     		c: function create() {
     			main = element("main");
-    			div10 = element("div");
+    			div9 = element("div");
     			h1 = element("h1");
     			h1.textContent = "Thelowダメージ計算";
     			t1 = space();
-    			div3 = element("div");
     			div2 = element("div");
     			div0 = element("div");
-    			h40 = element("h4");
-    			h40.textContent = "通常";
+    			small0 = element("small");
+    			small0.textContent = "通常";
     			t3 = space();
     			span0 = element("span");
     			t4 = text(t4_value);
     			t5 = space();
     			div1 = element("div");
-    			h41 = element("h4");
-    			h41.textContent = "クリティカル";
+    			small1 = element("small");
+    			small1.textContent = "クリティカル";
     			t7 = space();
     			span1 = element("span");
     			t8 = text(t8_value);
     			t9 = space();
-    			div9 = element("div");
-    			div5 = element("div");
+    			div8 = element("div");
+    			div4 = element("div");
     			h20 = element("h2");
     			h20.textContent = "基本ダメージ";
     			t11 = space();
@@ -687,7 +1074,7 @@ var app = (function () {
     			span2 = element("span");
     			span2.textContent = "オーバーストレンジ";
     			t28 = space();
-    			div4 = element("div");
+    			div3 = element("div");
     			select0 = element("select");
 
     			for (let i = 0; i < each_blocks_1.length; i += 1) {
@@ -697,8 +1084,8 @@ var app = (function () {
     			t29 = space();
     			input5 = element("input");
     			t30 = space();
-    			div8 = element("div");
-    			div6 = element("div");
+    			div7 = element("div");
+    			div5 = element("div");
     			h21 = element("h2");
     			h21.textContent = "魔法石";
     			t32 = space();
@@ -752,7 +1139,7 @@ var app = (function () {
     			label11 = element("label");
     			label11.textContent = "特攻魔法石Level5 or Legend";
     			t57 = space();
-    			div7 = element("div");
+    			div6 = element("div");
     			h22 = element("h2");
     			h22.textContent = "その他";
     			t59 = space();
@@ -775,223 +1162,228 @@ var app = (function () {
     			t65 = space();
     			p = element("p");
     			p.textContent = "※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。";
-    			attr_dev(h1, "class", "svelte-2x1evt");
-    			add_location(h1, file, 66, 2, 1346);
-    			add_location(h40, file, 70, 5, 1471);
+    			t67 = space();
+    			create_component(themebutton.$$.fragment);
+    			add_location(h1, file, 110, 2, 2706);
+    			add_location(small0, file, 113, 4, 2788);
     			attr_dev(span0, "class", "text-big");
-    			add_location(span0, file, 71, 5, 1489);
+    			add_location(span0, file, 114, 4, 2811);
     			attr_dev(div0, "class", "vbox");
-    			add_location(div0, file, 69, 4, 1446);
-    			add_location(h41, file, 74, 5, 1588);
+    			add_location(div0, file, 112, 3, 2764);
+    			add_location(small1, file, 117, 4, 2907);
     			attr_dev(span1, "class", "text-big");
-    			add_location(span1, file, 75, 5, 1610);
+    			add_location(span1, file, 118, 4, 2934);
     			attr_dev(div1, "class", "vbox");
-    			add_location(div1, file, 73, 4, 1563);
-    			attr_dev(div2, "class", "hbox space-around");
-    			add_location(div2, file, 68, 3, 1409);
-    			attr_dev(div3, "class", "result vbox padding");
-    			add_location(div3, file, 67, 2, 1371);
-    			add_location(h20, file, 81, 4, 1786);
+    			add_location(div1, file, 116, 3, 2883);
+    			attr_dev(div2, "class", "result padding svelte-13yd3sg");
+    			add_location(div2, file, 111, 2, 2731);
+    			add_location(h20, file, 123, 4, 3100);
     			attr_dev(label0, "for", "weaponDamageInput");
-    			add_location(label0, file, 83, 5, 1823);
+    			add_location(label0, file, 125, 5, 3137);
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "placeholder", "例:300");
-    			add_location(input0, file, 84, 5, 1877);
-    			add_location(section0, file, 82, 4, 1807);
+    			add_location(input0, file, 126, 5, 3191);
+    			attr_dev(section0, "class", "svelte-13yd3sg");
+    			add_location(section0, file, 124, 4, 3121);
     			attr_dev(label1, "for", "specialDamageInput");
-    			add_location(label1, file, 87, 5, 1984);
+    			add_location(label1, file, 129, 5, 3298);
     			attr_dev(input1, "type", "number");
     			attr_dev(input1, "placeholder", "例:50");
-    			add_location(input1, file, 88, 5, 2034);
-    			add_location(section1, file, 86, 4, 1968);
+    			add_location(input1, file, 130, 5, 3348);
+    			attr_dev(section1, "class", "svelte-13yd3sg");
+    			add_location(section1, file, 128, 4, 3282);
     			attr_dev(label2, "for", "jobGainInput");
-    			add_location(label2, file, 91, 5, 2141);
+    			add_location(label2, file, 133, 5, 3455);
     			attr_dev(input2, "type", "number");
     			attr_dev(input2, "placeholder", "例:10");
-    			add_location(input2, file, 92, 5, 2189);
-    			add_location(section2, file, 90, 4, 2125);
+    			add_location(input2, file, 134, 5, 3503);
+    			attr_dev(section2, "class", "svelte-13yd3sg");
+    			add_location(section2, file, 132, 4, 3439);
     			attr_dev(label3, "for", "equipGainInput");
-    			add_location(label3, file, 95, 5, 2290);
+    			add_location(label3, file, 137, 5, 3604);
     			attr_dev(input3, "type", "number");
     			attr_dev(input3, "placeholder", "例:10");
-    			add_location(input3, file, 96, 5, 2340);
-    			add_location(section3, file, 94, 4, 2274);
+    			add_location(input3, file, 138, 5, 3654);
+    			attr_dev(section3, "class", "svelte-13yd3sg");
+    			add_location(section3, file, 136, 4, 3588);
     			attr_dev(label4, "for", "parkGainInput");
-    			add_location(label4, file, 99, 5, 2443);
+    			add_location(label4, file, 141, 5, 3757);
     			attr_dev(input4, "type", "number");
     			attr_dev(input4, "placeholder", "例:140");
-    			add_location(input4, file, 100, 5, 2491);
-    			add_location(section4, file, 98, 4, 2427);
-    			add_location(span2, file, 103, 5, 2594);
+    			add_location(input4, file, 142, 5, 3805);
+    			attr_dev(section4, "class", "svelte-13yd3sg");
+    			add_location(section4, file, 140, 4, 3741);
+    			add_location(span2, file, 145, 5, 3908);
     			attr_dev(select0, "class", "flex-grow-3");
-    			if (/*overStrength*/ ctx[11] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[19].call(select0));
-    			add_location(select0, file, 105, 6, 2649);
+    			if (/*overStrength*/ ctx[12] === void 0) add_render_callback(() => /*select0_change_handler*/ ctx[23].call(select0));
+    			add_location(select0, file, 147, 6, 3963);
     			attr_dev(input5, "class", "flex-grow-1");
     			attr_dev(input5, "type", "button");
     			input5.value = "OS値適用";
-    			add_location(input5, file, 110, 6, 2834);
-    			attr_dev(div4, "class", "hbox");
-    			add_location(div4, file, 104, 5, 2623);
-    			add_location(section5, file, 102, 4, 2578);
-    			attr_dev(div5, "class", "basicdamage panel padding");
-    			add_location(div5, file, 80, 3, 1741);
-    			add_location(h21, file, 116, 5, 3039);
+    			add_location(input5, file, 152, 6, 4148);
+    			attr_dev(div3, "class", "hbox");
+    			add_location(div3, file, 146, 5, 3937);
+    			attr_dev(section5, "class", "svelte-13yd3sg");
+    			add_location(section5, file, 144, 4, 3892);
+    			attr_dev(div4, "class", "basicdamage panel padding svelte-13yd3sg");
+    			add_location(div4, file, 122, 3, 3055);
+    			add_location(h21, file, 158, 5, 4353);
     			attr_dev(label5, "for", "legendValueSelector");
-    			add_location(label5, file, 118, 6, 3101);
+    			add_location(label5, file, 160, 6, 4415);
     			option0.__value = "0";
     			option0.value = option0.__value;
-    			add_location(option0, file, 120, 7, 3205);
+    			add_location(option0, file, 162, 7, 4519);
     			option1.__value = "1";
     			option1.value = option1.__value;
-    			add_location(option1, file, 121, 7, 3243);
+    			add_location(option1, file, 163, 7, 4557);
     			option2.__value = "2";
     			option2.value = option2.__value;
-    			add_location(option2, file, 122, 7, 3281);
+    			add_location(option2, file, 164, 7, 4595);
     			option3.__value = "3";
     			option3.value = option3.__value;
-    			add_location(option3, file, 123, 7, 3319);
-    			if (/*numLegendStone*/ ctx[7] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[20].call(select1));
-    			add_location(select1, file, 119, 6, 3160);
+    			add_location(option3, file, 165, 7, 4633);
+    			if (/*numLegendStone*/ ctx[5] === void 0) add_render_callback(() => /*select1_change_handler*/ ctx[24].call(select1));
+    			add_location(select1, file, 161, 6, 4474);
     			attr_dev(section6, "class", "vbox margin-1/2em");
-    			add_location(section6, file, 117, 5, 3058);
+    			add_location(section6, file, 159, 5, 4372);
     			attr_dev(input6, "id", "ms1");
     			attr_dev(input6, "type", "checkbox");
-    			add_location(input6, file, 127, 6, 3406);
+    			add_location(input6, file, 169, 6, 4720);
     			attr_dev(label6, "for", "ms1");
-    			add_location(label6, file, 128, 6, 3485);
-    			add_location(section7, file, 126, 5, 3389);
+    			add_location(label6, file, 170, 6, 4799);
+    			add_location(section7, file, 168, 5, 4703);
     			attr_dev(input7, "id", "ms2");
     			attr_dev(input7, "type", "checkbox");
-    			add_location(input7, file, 131, 6, 3562);
+    			add_location(input7, file, 173, 6, 4876);
     			attr_dev(label7, "for", "ms2");
-    			add_location(label7, file, 132, 6, 3641);
-    			add_location(section8, file, 130, 5, 3545);
+    			add_location(label7, file, 174, 6, 4955);
+    			add_location(section8, file, 172, 5, 4859);
     			attr_dev(input8, "id", "ms3");
     			attr_dev(input8, "type", "checkbox");
-    			add_location(input8, file, 135, 6, 3718);
+    			add_location(input8, file, 177, 6, 5032);
     			attr_dev(label8, "for", "ms3");
-    			add_location(label8, file, 136, 6, 3797);
-    			add_location(section9, file, 134, 5, 3701);
+    			add_location(label8, file, 178, 6, 5111);
+    			add_location(section9, file, 176, 5, 5015);
     			attr_dev(input9, "id", "ms4");
     			attr_dev(input9, "type", "checkbox");
-    			add_location(input9, file, 139, 6, 3874);
+    			add_location(input9, file, 181, 6, 5188);
     			attr_dev(label9, "for", "ms4");
-    			add_location(label9, file, 140, 6, 3953);
-    			add_location(section10, file, 138, 5, 3857);
+    			add_location(label9, file, 182, 6, 5267);
+    			add_location(section10, file, 180, 5, 5171);
     			attr_dev(input10, "id", "ms4.5");
     			attr_dev(input10, "type", "checkbox");
-    			add_location(input10, file, 143, 6, 4030);
+    			add_location(input10, file, 185, 6, 5344);
     			attr_dev(label10, "for", "ms4.5");
-    			add_location(label10, file, 144, 6, 4113);
-    			add_location(section11, file, 142, 5, 4013);
+    			add_location(label10, file, 186, 6, 5427);
+    			add_location(section11, file, 184, 5, 5327);
     			attr_dev(input11, "id", "ms5");
     			attr_dev(input11, "type", "checkbox");
-    			add_location(input11, file, 147, 6, 4194);
+    			add_location(input11, file, 189, 6, 5508);
     			attr_dev(label11, "for", "ms5");
-    			add_location(label11, file, 148, 6, 4273);
-    			add_location(section12, file, 146, 5, 4177);
-    			attr_dev(div6, "class", "magicstone padding vbox");
-    			add_location(div6, file, 115, 4, 2995);
-    			add_location(h22, file, 152, 5, 4386);
+    			add_location(label11, file, 190, 6, 5587);
+    			add_location(section12, file, 188, 5, 5491);
+    			attr_dev(div5, "class", "magicstone padding vbox");
+    			add_location(div5, file, 157, 4, 4309);
+    			add_location(h22, file, 194, 5, 5700);
     			attr_dev(label12, "for", "skillSelector");
-    			add_location(label12, file, 154, 6, 4422);
-    			if (/*skill*/ ctx[9] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[27].call(select2));
-    			add_location(select2, file, 155, 6, 4468);
-    			add_location(section13, file, 153, 5, 4405);
+    			add_location(label12, file, 196, 6, 5736);
+    			if (/*skill*/ ctx[7] === void 0) add_render_callback(() => /*select2_change_handler*/ ctx[31].call(select2));
+    			add_location(select2, file, 197, 6, 5782);
+    			attr_dev(section13, "class", "svelte-13yd3sg");
+    			add_location(section13, file, 195, 5, 5719);
     			attr_dev(label13, "for", "strengthEffectInput");
-    			add_location(label13, file, 162, 6, 4674);
+    			add_location(label13, file, 204, 6, 5988);
     			attr_dev(input12, "type", "number");
     			attr_dev(input12, "placeholder", "例:5");
-    			add_location(input12, file, 163, 6, 4735);
-    			add_location(section14, file, 161, 5, 4657);
-    			attr_dev(div7, "class", "othereffect");
-    			add_location(div7, file, 151, 4, 4354);
-    			attr_dev(div8, "class", "vbox panel");
-    			add_location(div8, file, 114, 3, 2965);
-    			attr_dev(div9, "class", "hbox space-around");
-    			add_location(div9, file, 79, 2, 1705);
+    			add_location(input12, file, 205, 6, 6049);
+    			attr_dev(section14, "class", "svelte-13yd3sg");
+    			add_location(section14, file, 203, 5, 5971);
+    			attr_dev(div6, "class", "othereffect svelte-13yd3sg");
+    			add_location(div6, file, 193, 4, 5668);
+    			attr_dev(div7, "class", "vbox panel svelte-13yd3sg");
+    			add_location(div7, file, 156, 3, 4279);
+    			attr_dev(div8, "class", "params space-around svelte-13yd3sg");
+    			add_location(div8, file, 121, 2, 3017);
     			attr_dev(p, "class", "text-center");
-    			add_location(p, file, 168, 2, 4863);
-    			attr_dev(div10, "class", "container vbox");
-    			add_location(div10, file, 65, 1, 1314);
-    			attr_dev(main, "class", "svelte-2x1evt");
-    			add_location(main, file, 64, 0, 1305);
+    			add_location(p, file, 210, 2, 6166);
+    			attr_dev(div9, "class", "container vbox svelte-13yd3sg");
+    			add_location(div9, file, 109, 1, 2674);
+    			add_location(main, file, 108, 0, 2642);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, main, anchor);
-    			append_dev(main, div10);
-    			append_dev(div10, h1);
-    			append_dev(div10, t1);
-    			append_dev(div10, div3);
-    			append_dev(div3, div2);
+    			append_dev(main, div9);
+    			append_dev(div9, h1);
+    			append_dev(div9, t1);
+    			append_dev(div9, div2);
     			append_dev(div2, div0);
-    			append_dev(div0, h40);
+    			append_dev(div0, small0);
     			append_dev(div0, t3);
     			append_dev(div0, span0);
     			append_dev(span0, t4);
     			append_dev(div2, t5);
     			append_dev(div2, div1);
-    			append_dev(div1, h41);
+    			append_dev(div1, small1);
     			append_dev(div1, t7);
     			append_dev(div1, span1);
     			append_dev(span1, t8);
-    			append_dev(div10, t9);
-    			append_dev(div10, div9);
-    			append_dev(div9, div5);
-    			append_dev(div5, h20);
-    			append_dev(div5, t11);
-    			append_dev(div5, section0);
+    			append_dev(div9, t9);
+    			append_dev(div9, div8);
+    			append_dev(div8, div4);
+    			append_dev(div4, h20);
+    			append_dev(div4, t11);
+    			append_dev(div4, section0);
     			append_dev(section0, label0);
     			append_dev(section0, t13);
     			append_dev(section0, input0);
-    			set_input_value(input0, /*weaponDamage*/ ctx[2]);
-    			append_dev(div5, t14);
-    			append_dev(div5, section1);
+    			set_input_value(input0, /*weaponDamage*/ ctx[0]);
+    			append_dev(div4, t14);
+    			append_dev(div4, section1);
     			append_dev(section1, label1);
     			append_dev(section1, t16);
     			append_dev(section1, input1);
-    			set_input_value(input1, /*specialDamage*/ ctx[3]);
-    			append_dev(div5, t17);
-    			append_dev(div5, section2);
+    			set_input_value(input1, /*specialDamage*/ ctx[1]);
+    			append_dev(div4, t17);
+    			append_dev(div4, section2);
     			append_dev(section2, label2);
     			append_dev(section2, t19);
     			append_dev(section2, input2);
-    			set_input_value(input2, /*jobGain*/ ctx[5]);
-    			append_dev(div5, t20);
-    			append_dev(div5, section3);
+    			set_input_value(input2, /*jobGain*/ ctx[3]);
+    			append_dev(div4, t20);
+    			append_dev(div4, section3);
     			append_dev(section3, label3);
     			append_dev(section3, t22);
     			append_dev(section3, input3);
-    			set_input_value(input3, /*equipGain*/ ctx[6]);
-    			append_dev(div5, t23);
-    			append_dev(div5, section4);
+    			set_input_value(input3, /*equipGain*/ ctx[4]);
+    			append_dev(div4, t23);
+    			append_dev(div4, section4);
     			append_dev(section4, label4);
     			append_dev(section4, t25);
     			append_dev(section4, input4);
-    			set_input_value(input4, /*parkGain*/ ctx[4]);
-    			append_dev(div5, t26);
-    			append_dev(div5, section5);
+    			set_input_value(input4, /*parkGain*/ ctx[2]);
+    			append_dev(div4, t26);
+    			append_dev(div4, section5);
     			append_dev(section5, span2);
     			append_dev(section5, t28);
-    			append_dev(section5, div4);
-    			append_dev(div4, select0);
+    			append_dev(section5, div3);
+    			append_dev(div3, select0);
 
     			for (let i = 0; i < each_blocks_1.length; i += 1) {
     				each_blocks_1[i].m(select0, null);
     			}
 
-    			select_option(select0, /*overStrength*/ ctx[11]);
-    			append_dev(div4, t29);
-    			append_dev(div4, input5);
-    			append_dev(div9, t30);
-    			append_dev(div9, div8);
-    			append_dev(div8, div6);
-    			append_dev(div6, h21);
-    			append_dev(div6, t32);
-    			append_dev(div6, section6);
+    			select_option(select0, /*overStrength*/ ctx[12]);
+    			append_dev(div3, t29);
+    			append_dev(div3, input5);
+    			append_dev(div8, t30);
+    			append_dev(div8, div7);
+    			append_dev(div7, div5);
+    			append_dev(div5, h21);
+    			append_dev(div5, t32);
+    			append_dev(div5, section6);
     			append_dev(section6, label5);
     			append_dev(section6, t34);
     			append_dev(section6, select1);
@@ -999,48 +1391,48 @@ var app = (function () {
     			append_dev(select1, option1);
     			append_dev(select1, option2);
     			append_dev(select1, option3);
-    			select_option(select1, /*numLegendStone*/ ctx[7]);
-    			append_dev(div6, t39);
-    			append_dev(div6, section7);
+    			select_option(select1, /*numLegendStone*/ ctx[5]);
+    			append_dev(div5, t39);
+    			append_dev(div5, section7);
     			append_dev(section7, input6);
-    			input6.checked = /*magicStone*/ ctx[8]["level_1"];
+    			input6.checked = /*magicStone*/ ctx[6]["level_1"];
     			append_dev(section7, t40);
     			append_dev(section7, label6);
-    			append_dev(div6, t42);
-    			append_dev(div6, section8);
+    			append_dev(div5, t42);
+    			append_dev(div5, section8);
     			append_dev(section8, input7);
-    			input7.checked = /*magicStone*/ ctx[8]["level_2"];
+    			input7.checked = /*magicStone*/ ctx[6]["level_2"];
     			append_dev(section8, t43);
     			append_dev(section8, label7);
-    			append_dev(div6, t45);
-    			append_dev(div6, section9);
+    			append_dev(div5, t45);
+    			append_dev(div5, section9);
     			append_dev(section9, input8);
-    			input8.checked = /*magicStone*/ ctx[8]["level_3"];
+    			input8.checked = /*magicStone*/ ctx[6]["level_3"];
     			append_dev(section9, t46);
     			append_dev(section9, label8);
-    			append_dev(div6, t48);
-    			append_dev(div6, section10);
+    			append_dev(div5, t48);
+    			append_dev(div5, section10);
     			append_dev(section10, input9);
-    			input9.checked = /*magicStone*/ ctx[8]["level_4"];
+    			input9.checked = /*magicStone*/ ctx[6]["level_4"];
     			append_dev(section10, t49);
     			append_dev(section10, label9);
-    			append_dev(div6, t51);
-    			append_dev(div6, section11);
+    			append_dev(div5, t51);
+    			append_dev(div5, section11);
     			append_dev(section11, input10);
-    			input10.checked = /*magicStone*/ ctx[8]["level_4.5"];
+    			input10.checked = /*magicStone*/ ctx[6]["level_4.5"];
     			append_dev(section11, t52);
     			append_dev(section11, label10);
-    			append_dev(div6, t54);
-    			append_dev(div6, section12);
+    			append_dev(div5, t54);
+    			append_dev(div5, section12);
     			append_dev(section12, input11);
-    			input11.checked = /*magicStone*/ ctx[8]["level_5"];
+    			input11.checked = /*magicStone*/ ctx[6]["level_5"];
     			append_dev(section12, t55);
     			append_dev(section12, label11);
-    			append_dev(div8, t57);
-    			append_dev(div8, div7);
-    			append_dev(div7, h22);
-    			append_dev(div7, t59);
-    			append_dev(div7, section13);
+    			append_dev(div7, t57);
+    			append_dev(div7, div6);
+    			append_dev(div6, h22);
+    			append_dev(div6, t59);
+    			append_dev(div6, section13);
     			append_dev(section13, label12);
     			append_dev(section13, t61);
     			append_dev(section13, select2);
@@ -1049,65 +1441,69 @@ var app = (function () {
     				each_blocks[i].m(select2, null);
     			}
 
-    			select_option(select2, /*skill*/ ctx[9]);
-    			append_dev(div7, t62);
-    			append_dev(div7, section14);
+    			select_option(select2, /*skill*/ ctx[7]);
+    			append_dev(div6, t62);
+    			append_dev(div6, section14);
     			append_dev(section14, label13);
     			append_dev(section14, t64);
     			append_dev(section14, input12);
-    			set_input_value(input12, /*strengthEffectLevel*/ ctx[10]);
-    			append_dev(div10, t65);
-    			append_dev(div10, p);
+    			set_input_value(input12, /*strLevel*/ ctx[8]);
+    			append_dev(div9, t65);
+    			append_dev(div9, p);
+    			append_dev(div9, t67);
+    			mount_component(themebutton, div9, null);
+    			current = true;
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[14]),
-    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[15]),
-    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[16]),
-    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[17]),
-    					listen_dev(input4, "input", /*input4_input_handler*/ ctx[18]),
-    					listen_dev(select0, "change", /*select0_change_handler*/ ctx[19]),
-    					listen_dev(input5, "click", /*applyOverStrength*/ ctx[13], false, false, false),
-    					listen_dev(select1, "change", /*select1_change_handler*/ ctx[20]),
-    					listen_dev(input6, "change", /*input6_change_handler*/ ctx[21]),
-    					listen_dev(input7, "change", /*input7_change_handler*/ ctx[22]),
-    					listen_dev(input8, "change", /*input8_change_handler*/ ctx[23]),
-    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[24]),
-    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[25]),
-    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[26]),
-    					listen_dev(select2, "change", /*select2_change_handler*/ ctx[27]),
-    					listen_dev(input12, "input", /*input12_input_handler*/ ctx[28])
+    					listen_dev(input0, "input", /*input0_input_handler*/ ctx[18]),
+    					listen_dev(input1, "input", /*input1_input_handler*/ ctx[19]),
+    					listen_dev(input2, "input", /*input2_input_handler*/ ctx[20]),
+    					listen_dev(input3, "input", /*input3_input_handler*/ ctx[21]),
+    					listen_dev(input4, "input", /*input4_input_handler*/ ctx[22]),
+    					listen_dev(select0, "change", /*select0_change_handler*/ ctx[23]),
+    					listen_dev(input5, "click", /*applyOverStrength*/ ctx[17], false, false, false),
+    					listen_dev(select1, "change", /*select1_change_handler*/ ctx[24]),
+    					listen_dev(input6, "change", /*input6_change_handler*/ ctx[25]),
+    					listen_dev(input7, "change", /*input7_change_handler*/ ctx[26]),
+    					listen_dev(input8, "change", /*input8_change_handler*/ ctx[27]),
+    					listen_dev(input9, "change", /*input9_change_handler*/ ctx[28]),
+    					listen_dev(input10, "change", /*input10_change_handler*/ ctx[29]),
+    					listen_dev(input11, "change", /*input11_change_handler*/ ctx[30]),
+    					listen_dev(select2, "change", /*select2_change_handler*/ ctx[31]),
+    					listen_dev(input12, "input", /*input12_input_handler*/ ctx[32]),
+    					listen_dev(main, "load", applyTheme(), false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*result*/ 4096 && t4_value !== (t4_value = /*result*/ ctx[12].normal.toFixed(2) + "")) set_data_dev(t4, t4_value);
-    			if (dirty[0] & /*result*/ 4096 && t8_value !== (t8_value = /*result*/ ctx[12].critical.toFixed(2) + "")) set_data_dev(t8, t8_value);
+    			if ((!current || dirty[0] & /*$normalResult*/ 8192) && t4_value !== (t4_value = /*$normalResult*/ ctx[13].toFixed(2) + "")) set_data_dev(t4, t4_value);
+    			if ((!current || dirty[0] & /*$criticalResult*/ 16384) && t8_value !== (t8_value = /*$criticalResult*/ ctx[14].toFixed(2) + "")) set_data_dev(t8, t8_value);
 
-    			if (dirty[0] & /*weaponDamage*/ 4 && to_number(input0.value) !== /*weaponDamage*/ ctx[2]) {
-    				set_input_value(input0, /*weaponDamage*/ ctx[2]);
+    			if (dirty[0] & /*weaponDamage*/ 1 && to_number(input0.value) !== /*weaponDamage*/ ctx[0]) {
+    				set_input_value(input0, /*weaponDamage*/ ctx[0]);
     			}
 
-    			if (dirty[0] & /*specialDamage*/ 8 && to_number(input1.value) !== /*specialDamage*/ ctx[3]) {
-    				set_input_value(input1, /*specialDamage*/ ctx[3]);
+    			if (dirty[0] & /*specialDamage*/ 2 && to_number(input1.value) !== /*specialDamage*/ ctx[1]) {
+    				set_input_value(input1, /*specialDamage*/ ctx[1]);
     			}
 
-    			if (dirty[0] & /*jobGain*/ 32 && to_number(input2.value) !== /*jobGain*/ ctx[5]) {
-    				set_input_value(input2, /*jobGain*/ ctx[5]);
+    			if (dirty[0] & /*jobGain*/ 8 && to_number(input2.value) !== /*jobGain*/ ctx[3]) {
+    				set_input_value(input2, /*jobGain*/ ctx[3]);
     			}
 
-    			if (dirty[0] & /*equipGain*/ 64 && to_number(input3.value) !== /*equipGain*/ ctx[6]) {
-    				set_input_value(input3, /*equipGain*/ ctx[6]);
+    			if (dirty[0] & /*equipGain*/ 16 && to_number(input3.value) !== /*equipGain*/ ctx[4]) {
+    				set_input_value(input3, /*equipGain*/ ctx[4]);
     			}
 
-    			if (dirty[0] & /*parkGain*/ 16 && to_number(input4.value) !== /*parkGain*/ ctx[4]) {
-    				set_input_value(input4, /*parkGain*/ ctx[4]);
+    			if (dirty[0] & /*parkGain*/ 4 && to_number(input4.value) !== /*parkGain*/ ctx[2]) {
+    				set_input_value(input4, /*parkGain*/ ctx[2]);
     			}
 
-    			if (dirty[0] & /*over_strength_values*/ 2) {
-    				each_value_1 = /*over_strength_values*/ ctx[1];
+    			if (dirty[0] & /*over_strength_values*/ 2048) {
+    				each_value_1 = /*over_strength_values*/ ctx[11];
     				validate_each_argument(each_value_1);
     				let i;
 
@@ -1130,40 +1526,40 @@ var app = (function () {
     				each_blocks_1.length = each_value_1.length;
     			}
 
-    			if (dirty[0] & /*overStrength*/ 2048) {
-    				select_option(select0, /*overStrength*/ ctx[11]);
+    			if (dirty[0] & /*overStrength*/ 4096) {
+    				select_option(select0, /*overStrength*/ ctx[12]);
     			}
 
-    			if (dirty[0] & /*numLegendStone*/ 128) {
-    				select_option(select1, /*numLegendStone*/ ctx[7]);
+    			if (dirty[0] & /*numLegendStone*/ 32) {
+    				select_option(select1, /*numLegendStone*/ ctx[5]);
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input6.checked = /*magicStone*/ ctx[8]["level_1"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input6.checked = /*magicStone*/ ctx[6]["level_1"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input7.checked = /*magicStone*/ ctx[8]["level_2"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input7.checked = /*magicStone*/ ctx[6]["level_2"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input8.checked = /*magicStone*/ ctx[8]["level_3"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input8.checked = /*magicStone*/ ctx[6]["level_3"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input9.checked = /*magicStone*/ ctx[8]["level_4"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input9.checked = /*magicStone*/ ctx[6]["level_4"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input10.checked = /*magicStone*/ ctx[8]["level_4.5"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input10.checked = /*magicStone*/ ctx[6]["level_4.5"];
     			}
 
-    			if (dirty[0] & /*magicStone*/ 256) {
-    				input11.checked = /*magicStone*/ ctx[8]["level_5"];
+    			if (dirty[0] & /*magicStone*/ 64) {
+    				input11.checked = /*magicStone*/ ctx[6]["level_5"];
     			}
 
-    			if (dirty[0] & /*skill_data*/ 1) {
-    				each_value = Object.keys(/*skill_data*/ ctx[0]);
+    			if (dirty[0] & /*skill_data*/ 1024) {
+    				each_value = Object.keys(/*skill_data*/ ctx[10]);
     				validate_each_argument(each_value);
     				let i;
 
@@ -1186,20 +1582,38 @@ var app = (function () {
     				each_blocks.length = each_value.length;
     			}
 
-    			if (dirty[0] & /*skill, skill_data*/ 513) {
-    				select_option(select2, /*skill*/ ctx[9]);
+    			if (dirty[0] & /*skill, skill_data*/ 1152) {
+    				select_option(select2, /*skill*/ ctx[7]);
     			}
 
-    			if (dirty[0] & /*strengthEffectLevel*/ 1024 && to_number(input12.value) !== /*strengthEffectLevel*/ ctx[10]) {
-    				set_input_value(input12, /*strengthEffectLevel*/ ctx[10]);
+    			if (dirty[0] & /*strLevel*/ 256 && to_number(input12.value) !== /*strLevel*/ ctx[8]) {
+    				set_input_value(input12, /*strLevel*/ ctx[8]);
     			}
+
+    			const themebutton_changes = {};
+
+    			if (!updating_darkMode && dirty[0] & /*darkMode*/ 512) {
+    				updating_darkMode = true;
+    				themebutton_changes.darkMode = /*darkMode*/ ctx[9];
+    				add_flush_callback(() => updating_darkMode = false);
+    			}
+
+    			themebutton.$set(themebutton_changes);
     		},
-    		i: noop,
-    		o: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(themebutton.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(themebutton.$$.fragment, local);
+    			current = false;
+    		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
     			destroy_each(each_blocks_1, detaching);
     			destroy_each(each_blocks, detaching);
+    			destroy_component(themebutton);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -1217,30 +1631,50 @@ var app = (function () {
     }
 
     function instance($$self, $$props, $$invalidate) {
+    	let $normalResult;
+    	let $criticalResult;
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let { skill_data } = $$props;
     	let { over_strength_values } = $$props;
-    	let weaponDamage = "";
-    	let specialDamage = "";
-    	let parkGain = "";
-    	let jobGain = "";
-    	let equipGain = "";
+    	let { darkMode } = $$props;
+    	let { weaponDamage = "" } = $$props;
+    	let { specialDamage = "" } = $$props;
+    	let { parkGain = "" } = $$props;
+    	let { jobGain = "" } = $$props;
+    	let { equipGain = "" } = $$props;
     	let overStrength = "0";
-    	let numLegendStone = "0";
+    	let { numLegendStone = "0" } = $$props;
 
-    	let magicStone = {
+    	let { magicStone = {
     		level_1: false,
     		level_2: false,
     		level_3: false,
     		level_4: false,
     		"level_4.5": false,
     		level_5: false
-    	};
+    	} } = $$props;
 
-    	let skill = "general_attack";
-    	let strengthEffectLevel = 0;
-    	let result = { normal: 0, critical: 0 };
+    	let { skill = "general_attack" } = $$props;
+    	let { strLevel = 0 } = $$props;
+
+    	const normalResult = tweened(0, {
+    		delay: 200,
+    		duration: 1000,
+    		easing: quartOut
+    	});
+
+    	validate_store(normalResult, 'normalResult');
+    	component_subscribe($$self, normalResult, value => $$invalidate(13, $normalResult = value));
+
+    	const criticalResult = tweened(0, {
+    		delay: 200,
+    		duration: 1000,
+    		easing: quartOut
+    	});
+
+    	validate_store(criticalResult, 'criticalResult');
+    	component_subscribe($$self, criticalResult, value => $$invalidate(14, $criticalResult = value));
 
     	let magicStoneScales = {
     		level_1: 1.1,
@@ -1252,100 +1686,162 @@ var app = (function () {
     	};
 
     	function applyOverStrength() {
-    		console.log(overStrength);
-    		$$invalidate(4, parkGain = over_strength_values[Number(overStrength)]);
+    		$$invalidate(2, parkGain = over_strength_values[Number(overStrength)]);
     	}
 
-    	const writable_props = ['skill_data', 'over_strength_values'];
+    	function updateURLParameters() {
+    		const url = new URL(window.location);
+    		const params = new URLSearchParams();
+    		if (weaponDamage) params.set("wd", weaponDamage.toString(36));
+    		if (specialDamage) params.set("sd", specialDamage.toString(36));
+    		if (parkGain) params.set("pg", parkGain.toString(36));
+    		if (jobGain) params.set("jg", jobGain.toString(36));
+    		if (equipGain) params.set("eg", equipGain.toString(36));
+    		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
+    		if (skill !== "general_attack") params.set("sk", skill);
+
+    		const ms = Object.keys(magicStone).reduce(
+    			(acc, cur) => {
+    				return acc + (magicStone[cur] ? 1 : 0);
+    			},
+    			""
+    		);
+
+    		if (ms !== "000000") {
+    			params.set("ms", ms);
+    		}
+
+    		if (strLevel) {
+    			params.set("str", strLevel.toString(36));
+    		}
+
+    		url.search = params.toString();
+    		window.history.replaceState({}, "", url);
+    	}
+
+    	const writable_props = [
+    		'skill_data',
+    		'over_strength_values',
+    		'darkMode',
+    		'weaponDamage',
+    		'specialDamage',
+    		'parkGain',
+    		'jobGain',
+    		'equipGain',
+    		'numLegendStone',
+    		'magicStone',
+    		'skill',
+    		'strLevel'
+    	];
 
     	Object_1.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<App> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
     	function input0_input_handler() {
     		weaponDamage = to_number(this.value);
-    		$$invalidate(2, weaponDamage);
+    		$$invalidate(0, weaponDamage);
     	}
 
     	function input1_input_handler() {
     		specialDamage = to_number(this.value);
-    		$$invalidate(3, specialDamage);
+    		$$invalidate(1, specialDamage);
     	}
 
     	function input2_input_handler() {
     		jobGain = to_number(this.value);
-    		$$invalidate(5, jobGain);
+    		$$invalidate(3, jobGain);
     	}
 
     	function input3_input_handler() {
     		equipGain = to_number(this.value);
-    		$$invalidate(6, equipGain);
+    		$$invalidate(4, equipGain);
     	}
 
     	function input4_input_handler() {
     		parkGain = to_number(this.value);
-    		$$invalidate(4, parkGain);
+    		$$invalidate(2, parkGain);
     	}
 
     	function select0_change_handler() {
     		overStrength = select_value(this);
-    		$$invalidate(11, overStrength);
+    		$$invalidate(12, overStrength);
     	}
 
     	function select1_change_handler() {
     		numLegendStone = select_value(this);
-    		$$invalidate(7, numLegendStone);
+    		$$invalidate(5, numLegendStone);
     	}
 
     	function input6_change_handler() {
     		magicStone["level_1"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input7_change_handler() {
     		magicStone["level_2"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input8_change_handler() {
     		magicStone["level_3"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input9_change_handler() {
     		magicStone["level_4"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input10_change_handler() {
     		magicStone["level_4.5"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function input11_change_handler() {
     		magicStone["level_5"] = this.checked;
-    		$$invalidate(8, magicStone);
+    		$$invalidate(6, magicStone);
     	}
 
     	function select2_change_handler() {
     		skill = select_value(this);
-    		$$invalidate(9, skill);
-    		$$invalidate(0, skill_data);
+    		$$invalidate(7, skill);
+    		$$invalidate(10, skill_data);
     	}
 
     	function input12_input_handler() {
-    		strengthEffectLevel = to_number(this.value);
-    		$$invalidate(10, strengthEffectLevel);
+    		strLevel = to_number(this.value);
+    		$$invalidate(8, strLevel);
+    	}
+
+    	function themebutton_darkMode_binding(value) {
+    		darkMode = value;
+    		$$invalidate(9, darkMode);
     	}
 
     	$$self.$$set = $$props => {
-    		if ('skill_data' in $$props) $$invalidate(0, skill_data = $$props.skill_data);
-    		if ('over_strength_values' in $$props) $$invalidate(1, over_strength_values = $$props.over_strength_values);
+    		if ('skill_data' in $$props) $$invalidate(10, skill_data = $$props.skill_data);
+    		if ('over_strength_values' in $$props) $$invalidate(11, over_strength_values = $$props.over_strength_values);
+    		if ('darkMode' in $$props) $$invalidate(9, darkMode = $$props.darkMode);
+    		if ('weaponDamage' in $$props) $$invalidate(0, weaponDamage = $$props.weaponDamage);
+    		if ('specialDamage' in $$props) $$invalidate(1, specialDamage = $$props.specialDamage);
+    		if ('parkGain' in $$props) $$invalidate(2, parkGain = $$props.parkGain);
+    		if ('jobGain' in $$props) $$invalidate(3, jobGain = $$props.jobGain);
+    		if ('equipGain' in $$props) $$invalidate(4, equipGain = $$props.equipGain);
+    		if ('numLegendStone' in $$props) $$invalidate(5, numLegendStone = $$props.numLegendStone);
+    		if ('magicStone' in $$props) $$invalidate(6, magicStone = $$props.magicStone);
+    		if ('skill' in $$props) $$invalidate(7, skill = $$props.skill);
+    		if ('strLevel' in $$props) $$invalidate(8, strLevel = $$props.strLevel);
     	};
 
     	$$self.$capture_state = () => ({
+    		tweened,
+    		quartOut,
+    		ThemeButton,
+    		applyTheme,
     		skill_data,
     		over_strength_values,
+    		darkMode,
     		weaponDamage,
     		specialDamage,
     		parkGain,
@@ -1355,27 +1851,31 @@ var app = (function () {
     		numLegendStone,
     		magicStone,
     		skill,
-    		strengthEffectLevel,
-    		result,
+    		strLevel,
+    		normalResult,
+    		criticalResult,
     		magicStoneScales,
-    		applyOverStrength
+    		applyOverStrength,
+    		updateURLParameters,
+    		$normalResult,
+    		$criticalResult
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('skill_data' in $$props) $$invalidate(0, skill_data = $$props.skill_data);
-    		if ('over_strength_values' in $$props) $$invalidate(1, over_strength_values = $$props.over_strength_values);
-    		if ('weaponDamage' in $$props) $$invalidate(2, weaponDamage = $$props.weaponDamage);
-    		if ('specialDamage' in $$props) $$invalidate(3, specialDamage = $$props.specialDamage);
-    		if ('parkGain' in $$props) $$invalidate(4, parkGain = $$props.parkGain);
-    		if ('jobGain' in $$props) $$invalidate(5, jobGain = $$props.jobGain);
-    		if ('equipGain' in $$props) $$invalidate(6, equipGain = $$props.equipGain);
-    		if ('overStrength' in $$props) $$invalidate(11, overStrength = $$props.overStrength);
-    		if ('numLegendStone' in $$props) $$invalidate(7, numLegendStone = $$props.numLegendStone);
-    		if ('magicStone' in $$props) $$invalidate(8, magicStone = $$props.magicStone);
-    		if ('skill' in $$props) $$invalidate(9, skill = $$props.skill);
-    		if ('strengthEffectLevel' in $$props) $$invalidate(10, strengthEffectLevel = $$props.strengthEffectLevel);
-    		if ('result' in $$props) $$invalidate(12, result = $$props.result);
-    		if ('magicStoneScales' in $$props) $$invalidate(29, magicStoneScales = $$props.magicStoneScales);
+    		if ('skill_data' in $$props) $$invalidate(10, skill_data = $$props.skill_data);
+    		if ('over_strength_values' in $$props) $$invalidate(11, over_strength_values = $$props.over_strength_values);
+    		if ('darkMode' in $$props) $$invalidate(9, darkMode = $$props.darkMode);
+    		if ('weaponDamage' in $$props) $$invalidate(0, weaponDamage = $$props.weaponDamage);
+    		if ('specialDamage' in $$props) $$invalidate(1, specialDamage = $$props.specialDamage);
+    		if ('parkGain' in $$props) $$invalidate(2, parkGain = $$props.parkGain);
+    		if ('jobGain' in $$props) $$invalidate(3, jobGain = $$props.jobGain);
+    		if ('equipGain' in $$props) $$invalidate(4, equipGain = $$props.equipGain);
+    		if ('overStrength' in $$props) $$invalidate(12, overStrength = $$props.overStrength);
+    		if ('numLegendStone' in $$props) $$invalidate(5, numLegendStone = $$props.numLegendStone);
+    		if ('magicStone' in $$props) $$invalidate(6, magicStone = $$props.magicStone);
+    		if ('skill' in $$props) $$invalidate(7, skill = $$props.skill);
+    		if ('strLevel' in $$props) $$invalidate(8, strLevel = $$props.strLevel);
+    		if ('magicStoneScales' in $$props) $$invalidate(34, magicStoneScales = $$props.magicStoneScales);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -1383,7 +1883,7 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*weaponDamage, skill_data, skill, specialDamage, parkGain, jobGain, equipGain, magicStone, strengthEffectLevel, numLegendStone*/ 2045) {
+    		if ($$self.$$.dirty[0] & /*weaponDamage, skill_data, skill, specialDamage, parkGain, jobGain, equipGain, magicStone, strLevel, numLegendStone*/ 1535) {
     			{
     				let normal = Number(weaponDamage);
 
@@ -1400,20 +1900,16 @@ var app = (function () {
     				}
 
     				scale *= skill_data[skill].multiply;
-
-    				scale *= strengthEffectLevel
-    				? 1 + 0.2 * Number(strengthEffectLevel)
-    				: 1;
-
+    				scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
     				scale *= 1.06 ** Number(numLegendStone);
-    				$$invalidate(12, result.normal = normal * scale, result);
+    				normalResult.set(normal * scale);
+    				criticalResult.set(normal * scale * 1.15);
+    				updateURLParameters();
     			}
     		}
     	};
 
     	return [
-    		skill_data,
-    		over_strength_values,
     		weaponDamage,
     		specialDamage,
     		parkGain,
@@ -1422,9 +1918,15 @@ var app = (function () {
     		numLegendStone,
     		magicStone,
     		skill,
-    		strengthEffectLevel,
+    		strLevel,
+    		darkMode,
+    		skill_data,
+    		over_strength_values,
     		overStrength,
-    		result,
+    		$normalResult,
+    		$criticalResult,
+    		normalResult,
+    		criticalResult,
     		applyOverStrength,
     		input0_input_handler,
     		input1_input_handler,
@@ -1440,14 +1942,38 @@ var app = (function () {
     		input10_change_handler,
     		input11_change_handler,
     		select2_change_handler,
-    		input12_input_handler
+    		input12_input_handler,
+    		themebutton_darkMode_binding
     	];
     }
 
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { skill_data: 0, over_strength_values: 1 }, null, [-1, -1]);
+
+    		init(
+    			this,
+    			options,
+    			instance,
+    			create_fragment,
+    			safe_not_equal,
+    			{
+    				skill_data: 10,
+    				over_strength_values: 11,
+    				darkMode: 9,
+    				weaponDamage: 0,
+    				specialDamage: 1,
+    				parkGain: 2,
+    				jobGain: 3,
+    				equipGain: 4,
+    				numLegendStone: 5,
+    				magicStone: 6,
+    				skill: 7,
+    				strLevel: 8
+    			},
+    			null,
+    			[-1, -1]
+    		);
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -1459,12 +1985,16 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
 
-    		if (/*skill_data*/ ctx[0] === undefined && !('skill_data' in props)) {
-    			console_1.warn("<App> was created without expected prop 'skill_data'");
+    		if (/*skill_data*/ ctx[10] === undefined && !('skill_data' in props)) {
+    			console.warn("<App> was created without expected prop 'skill_data'");
     		}
 
-    		if (/*over_strength_values*/ ctx[1] === undefined && !('over_strength_values' in props)) {
-    			console_1.warn("<App> was created without expected prop 'over_strength_values'");
+    		if (/*over_strength_values*/ ctx[11] === undefined && !('over_strength_values' in props)) {
+    			console.warn("<App> was created without expected prop 'over_strength_values'");
+    		}
+
+    		if (/*darkMode*/ ctx[9] === undefined && !('darkMode' in props)) {
+    			console.warn("<App> was created without expected prop 'darkMode'");
     		}
     	}
 
@@ -1481,6 +2011,86 @@ var app = (function () {
     	}
 
     	set over_strength_values(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get darkMode() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set darkMode(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get weaponDamage() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set weaponDamage(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get specialDamage() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set specialDamage(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get parkGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set parkGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get jobGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set jobGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get equipGain() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set equipGain(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get numLegendStone() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set numLegendStone(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get magicStone() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set magicStone(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get skill() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set skill(value) {
+    		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get strLevel() {
+    		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set strLevel(value) {
     		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -1586,10 +2196,57 @@ var app = (function () {
     	props: {
     		skill_data,
     		over_strength_values,
+    		darkMode: localStorage.getItem("dark_mode") == "true",
+    		...parseURLParams(),
     	},
     });
 
-    return app;
+    function applyTheme() {
+    	const darkMode = localStorage.getItem("dark_mode") == "true";
 
-})();
+    	//Apply theme attribute
+    	if (darkMode) {
+    		document.documentElement.setAttribute("theme", "dark");
+    	} else {
+    		document.documentElement.removeAttribute("theme");
+    	}
+    }
+
+    function parseURLParams() {
+    	const params = new URLSearchParams(location.search);
+    	const parsed = {
+    		weaponDamage: params.has("wd") ? parseInt(params.get("wd"), 36) : 0,
+    		specialDamage: params.has("sd") ? parseInt(params.get("sd"), 36) : 0,
+    		parkGain: params.has("pg") ? parseInt(params.get("pg"), 36) : 0,
+    		jobGain: params.has("jg") ? parseInt(params.get("jg"), 36) : 0,
+    		equipGain: params.has("eg") ? parseInt(params.get("eg"), 36) : 0,
+    		numLegendStone: params.has("ns") ? parseInt(params.get("ns"), 36) : "0",
+    		skill: params.has("sk") ? params.get("sk") : "general_attack",
+    		strLevel: params.has("str") ? parseInt(params.get("str"), 36) : 0,
+    	};
+
+    	if (params.has("ms")) {
+    		const flg = parseInt(params.get("ms"), 2);
+    		parsed["magicStone"] = {
+    			level_1: ((flg >> 5) & 1) == 1,
+    			level_2: ((flg >> 4) & 1) == 1,
+    			level_3: ((flg >> 3) & 1) == 1,
+    			level_4: ((flg >> 2) & 1) == 1,
+    			"level_4.5": ((flg >> 1) & 1) == 1,
+    			level_5: ((flg >> 0) & 1) == 1,
+    		};
+    	}
+
+    	return parsed;
+    }
+
+    exports.applyTheme = applyTheme;
+    exports["default"] = app;
+    exports.parseURLParams = parseURLParams;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+    return exports;
+
+})({});
 //# sourceMappingURL=bundle.js.map

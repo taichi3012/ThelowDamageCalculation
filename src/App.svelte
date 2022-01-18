@@ -1,15 +1,21 @@
 <script>
+	import { tweened } from "svelte/motion";
+	import { quartOut } from "svelte/easing";
+	import ThemeButton from "./component/ThemeButton.svelte";
+	import { applyTheme } from "./main";
+
 	export let skill_data;
 	export let over_strength_values;
+	export let darkMode;
 
-	let weaponDamage = "";
-	let specialDamage = "";
-	let parkGain = "";
-	let jobGain = "";
-	let equipGain = "";
+	export let weaponDamage = "";
+	export let specialDamage = "";
+	export let parkGain = "";
+	export let jobGain = "";
+	export let equipGain = "";
 	let overStrength = "0";
-	let numLegendStone = "0";
-	let magicStone = {
+	export let numLegendStone = "0";
+	export let magicStone = {
 		level_1: false,
 		level_2: false,
 		level_3: false,
@@ -18,13 +24,20 @@
 		level_5: false,
 	};
 
-	let skill = "general_attack";
-	let strengthEffectLevel = 0;
+	export let skill = "general_attack";
+	export let strLevel = 0;
 
-	let result = {
-		normal: 0,
-		critical: 0,
-	};
+	const normalResult = tweened(0, {
+		delay: 200,
+		duration: 1000,
+		easing: quartOut,
+	});
+
+	const criticalResult = tweened(0, {
+		delay: 200,
+		duration: 1000,
+		easing: quartOut,
+	});
 
 	let magicStoneScales = {
 		level_1: 1.1,
@@ -50,34 +63,63 @@
 		}
 
 		scale *= skill_data[skill].multiply;
-		scale *= strengthEffectLevel ? 1 + 0.2 * Number(strengthEffectLevel) : 1;
+		scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
 		scale *= 1.06 ** Number(numLegendStone);
 
-		result.normal = normal * scale;
+		normalResult.set(normal * scale);
+		criticalResult.set(normal * scale * 1.15);
+
+		updateURLParameters();
 	}
 
 	function applyOverStrength() {
-		console.log(overStrength);
 		parkGain = over_strength_values[Number(overStrength)];
+	}
+
+	function updateURLParameters() {
+		const url = new URL(window.location);
+		const params = new URLSearchParams();
+
+		if (weaponDamage) params.set("wd", weaponDamage.toString(36));
+		if (specialDamage) params.set("sd", specialDamage.toString(36));
+		if (parkGain) params.set("pg", parkGain.toString(36));
+		if (jobGain) params.set("jg", jobGain.toString(36));
+		if (equipGain) params.set("eg", equipGain.toString(36));
+		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
+
+		if (skill !== "general_attack") params.set("sk", skill);
+
+		const ms = Object.keys(magicStone).reduce((acc, cur) => {
+			return acc + (magicStone[cur] ? 1 : 0);
+		}, "");
+
+		if (ms !== "000000") {
+			params.set("ms", ms);
+		}
+
+		if (strLevel) {
+			params.set("str", strLevel.toString(36));
+		}
+
+		url.search = params.toString();
+		window.history.replaceState({}, "", url);
 	}
 </script>
 
-<main>
+<main on:load={applyTheme()}>
 	<div class="container vbox">
 		<h1>Thelowダメージ計算</h1>
-		<div class="result vbox padding">
-			<div class="hbox space-around">
-				<div class="vbox">
-					<h4>通常</h4>
-					<span class="text-big">{result.normal.toFixed(2)}</span>
-				</div>
-				<div class="vbox">
-					<h4>クリティカル</h4>
-					<span class="text-big">{result.critical.toFixed(2)}</span>
-				</div>
+		<div class="result padding">
+			<div class="vbox">
+				<small>通常</small>
+				<span class="text-big">{$normalResult.toFixed(2)}</span>
+			</div>
+			<div class="vbox">
+				<small>クリティカル</small>
+				<span class="text-big">{$criticalResult.toFixed(2)}</span>
 			</div>
 		</div>
-		<div class="hbox space-around">
+		<div class="params space-around">
 			<div class="basicdamage panel padding">
 				<h2>基本ダメージ</h2>
 				<section>
@@ -161,31 +203,67 @@
 					</section>
 					<section>
 						<label for="strengthEffectInput">攻撃力上昇エフェクトLv</label>
-						<input type="number" placeholder="例:5" bind:value={strengthEffectLevel} />
+						<input type="number" placeholder="例:5" bind:value={strLevel} />
 					</section>
 				</div>
 			</div>
 		</div>
 		<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
+		<ThemeButton bind:darkMode />
 	</div>
 </main>
 
 <style>
-	main {
+	.params {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.container {
+		margin: auto;
+		max-width: 1000px;
+		min-height: 100vh;
+	}
+
+	.result {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
 		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
 	}
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
+
+	@media screen and (max-width: 640px) {
+		.params {
+			display: flex;
+			flex-direction: column;
 		}
+		.container {
+			margin: 0 0.4em;
+		}
+
+		.result {
+			flex-direction: column;
+		}
+	}
+
+	.panel {
+		min-width: 40%;
+	}
+
+	.basicdamage {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.basicdamage section {
+		display: flex;
+		flex-direction: column;
+		margin: 0.5em;
+	}
+
+	.othereffect section {
+		display: flex;
+		flex-direction: column;
+		margin: 0.5em;
 	}
 </style>
