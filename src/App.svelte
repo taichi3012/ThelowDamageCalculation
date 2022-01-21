@@ -112,7 +112,7 @@
 
 <main on:load={applyTheme()}>
 	<div class="container vbox">
-		<h1 class="pointer" on:click={copyToClipboard(link)}>
+		<h1 class="pointer" title="クリックでリンクをコピーできます" on:click={copyToClipboard(link)}>
 			Thelowダメージ計算
 			<span class="material-icons">share</span>
 		</h1>
