@@ -2,7 +2,7 @@
 	import { tweened } from "svelte/motion";
 	import { quartOut } from "svelte/easing";
 	import ThemeButton from "./component/ThemeButton.svelte";
-	import { applyTheme } from "./main";
+	import { applyTheme, copyToClipboard } from "./main";
 
 	export let skill_data;
 	export let over_strength_values;
@@ -26,6 +26,8 @@
 
 	export let skill = "general_attack";
 	export let strLevel = 0;
+
+	let link = "";
 
 	const normalResult = tweened(0, {
 		delay: 200,
@@ -103,12 +105,17 @@
 
 		url.search = params.toString();
 		window.history.replaceState({}, "", url);
+
+		link = url;
 	}
 </script>
 
 <main on:load={applyTheme()}>
 	<div class="container vbox">
-		<h1>Thelowダメージ計算</h1>
+		<h1 class="pointer" on:click={copyToClipboard(link)}>
+			Thelowダメージ計算
+			<span class="material-icons">share</span>
+		</h1>
 		<div class="result padding">
 			<div class="vbox">
 				<small>通常</small>
