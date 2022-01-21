@@ -51,4 +51,16 @@ export function parseURLParams() {
 	return parsed;
 }
 
+export function copyToClipboard(text) {
+	const textarea = document.createElement("textarea");
+	document.body.append(textarea);
+	textarea.value = text;
+
+	textarea.select();
+	document.execCommand("copy");
+	textarea.remove(textarea);
+
+	window.alert("you copied current URL!");
+}
+
 export default app;
