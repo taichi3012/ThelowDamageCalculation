@@ -59,8 +59,6 @@ export function copyToClipboard(text) {
 	textarea.select();
 	document.execCommand("copy");
 	textarea.remove(textarea);
-
-	window.alert("you copied current URL!");
 }
 
 export default app;
