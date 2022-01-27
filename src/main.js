@@ -25,13 +25,31 @@ export function applyTheme() {
 
 export function parseURLParams() {
 	const params = new URLSearchParams(location.search);
+	const parseFromAlignedNum = function(string) {
+		const arr = String(string).split("E");
+		let value = parseInt(arr[0], 36);
+		let exp = 0;
+		
+		if (arr[1]) {
+			exp = parseInt(arr[1], 36);
+		}
+
+		value *= 10 ** exp;
+		
+		if (exp < 0) {
+			value = parseFloat(value.toFixed(-exp));
+		}
+		
+		return value;
+	};
+
 	const parsed = {
-		weaponDamage: params.has("wd") ? parseInt(params.get("wd"), 36) : 0,
-		specialDamage: params.has("sd") ? parseInt(params.get("sd"), 36) : 0,
-		parkGain: params.has("pg") ? parseInt(params.get("pg"), 36) : 0,
-		jobGain: params.has("jg") ? parseInt(params.get("jg"), 36) : 0,
-		equipGain: params.has("eg") ? parseInt(params.get("eg"), 36) : 0,
-		numLegendStone: params.has("ns") ? parseInt(params.get("ns"), 36) : "0",
+		weaponDamage: params.has("wd") ? parseFromAlignedNum(params.get("wd")) : 0,
+		specialDamage: params.has("sd") ? parseFromAlignedNum(params.get("sd")) : 0,
+		parkGain: params.has("pg") ? parseFromAlignedNum(params.get("pg")) : 0,
+		jobGain: params.has("jg") ? parseFromAlignedNum(params.get("jg")) : 0,
+		equipGain: params.has("eg") ? parseFromAlignedNum(params.get("eg")) : 0,
+		numLegendStone: params.has("ns") ? parseInt(params.get("ns")) : "0",
 		skill: params.has("sk") ? params.get("sk") : "general_attack",
 		strLevel: params.has("str") ? parseInt(params.get("str"), 36) : 0,
 	};

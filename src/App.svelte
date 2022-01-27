@@ -79,12 +79,24 @@
 	function updateURLParameters() {
 		const url = new URL(window.location);
 		const params = new URLSearchParams();
+		const formatToAlignedNum = function(string) {
+			let value = parseFloat(string);
 
-		if (weaponDamage) params.set("wd", weaponDamage.toString(36));
-		if (specialDamage) params.set("sd", specialDamage.toString(36));
-		if (parkGain) params.set("pg", parkGain.toString(36));
-		if (jobGain) params.set("jg", jobGain.toString(36));
-		if (equipGain) params.set("eg", equipGain.toString(36));
+			if (value !== +value.toFixed()) {
+				const decDigit = String(string).split(".")[1].length;
+				value = Math.round(value * (10 ** decDigit));
+				
+				return value.toString(36) + "E" + -decDigit.toString(36);
+			}
+
+			return value.toString(36);
+		};
+
+		if (weaponDamage) params.set("wd", formatToAlignedNum(weaponDamage));
+		if (specialDamage) params.set("sd", formatToAlignedNum(specialDamage));
+		if (parkGain) params.set("pg", formatToAlignedNum(parkGain));
+		if (jobGain) params.set("jg", formatToAlignedNum(jobGain));
+		if (equipGain) params.set("eg", formatToAlignedNum(equipGain));
 		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
 
 		if (skill !== "general_attack") params.set("sk", skill);
