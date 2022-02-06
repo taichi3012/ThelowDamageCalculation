@@ -36,8 +36,8 @@ export const skill_data = {
 	},
 	chaos_blizzard: {
 		name: "カオスブリザード(全弾Hit)",
-		multiply: 7.0,
-		availabilSpecial: true,
+		multiply: 1.1 * 7.0,
+		availabilSpecial: false,
 	},
 	snow_pillar: {
 		name: "雪柱",
