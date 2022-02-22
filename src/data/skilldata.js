@@ -6,7 +6,7 @@ export const skill_data = {
 	},
 	seiken_passive_boss: {
 		name: "下剋上(BOSS)",
-		multiply: 1.2,
+		multiply: 1.07,
 		availabilSpecial: true,
 	},
 	seiken_passive_mob: {
