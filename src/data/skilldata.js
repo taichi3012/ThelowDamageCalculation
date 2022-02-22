@@ -9,7 +9,7 @@ export const skill_data = {
 		multiply: 1.07,
 		availabilSpecial: true,
 	},
-	gekokujo_boss_plus_30: {
+	gekokujo_boss_excl_job: {
 		name: "下剋上(BOSS,専用職業)",
 		multiply: 1.3,
 		availabilSpecial: true,
