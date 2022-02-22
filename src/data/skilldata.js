@@ -25,6 +25,11 @@ export const skill_data = {
 		multiply: 0.7,
 		availabilSpecial: true,
 	},
+	amrudad_boss_excl_job: {
+		name: "アムル(BOSS,専用職業)",
+		multiply: 1.1,
+		availabilSpecial: true,
+	},
 	volcano: {
 		name: "ボルケーノ",
 		multiply: 22.0,
