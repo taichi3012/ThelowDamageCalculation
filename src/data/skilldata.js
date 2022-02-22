@@ -14,6 +14,11 @@ export const skill_data = {
 		multiply: 1.3,
 		availabilSpecial: true,
 	},
+	gekokujo_boss_coexis: {
+		name: "下剋上(BOSS)専用職業&-10%",
+		multiply: 1.3 * 0.9,
+		availabilSpecial: false,
+	},
 	gekokujo_mob: {
 		name: "下剋上(MOB)",
 		multiply: 0.7,
