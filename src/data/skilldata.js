@@ -60,6 +60,11 @@ export const skill_data = {
 		multiply: 4.0,
 		availabilSpecial: false,
 	},
+	stead_shock: {
+		name: "ステッドショック",
+		multiply: 28.0,
+		availabilSpecial: false,
+	},
 	over_shoot_shadow_power: {
 		name: "オーバーシュート(スキルあり)",
 		multiply: 18.75,
