@@ -4,6 +4,11 @@ export const skill_data = {
 		multiply: 1.0,
 		availabilSpecial: true,
 	},
+	magical_mixture_hit: {
+		name: "魔混(直撃)",
+		multiply: 1.7,
+		availabilSpecial: true,
+	},
 	gekokujo_boss: {
 		name: "下剋上(BOSS)",
 		multiply: 1.07,
