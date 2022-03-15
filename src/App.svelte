@@ -295,6 +295,10 @@
 		margin: 0.5em;
 	}
 
+	.othereffect {
+		padding: 0 1em;
+	}
+
 	.othereffect section {
 		display: flex;
 		flex-direction: column;
