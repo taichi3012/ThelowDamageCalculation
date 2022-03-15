@@ -49,7 +49,7 @@ export function parseURLParams() {
 		parkGain: params.has("pg") ? parseFromAlignedNum(params.get("pg")) : 0,
 		jobGain: params.has("jg") ? parseFromAlignedNum(params.get("jg")) : 0,
 		equipGain: params.has("eg") ? parseFromAlignedNum(params.get("eg")) : 0,
-		numLegendStone: params.has("ns") ? parseInt(params.get("ns")) : "0",
+		numLegendStone: params.has("ns") ? parseInt(params.get("ns")).toString() : "0",
 		skill: params.has("sk") ? params.get("sk") : "general_attack",
 		strLevel: params.has("str") ? parseInt(params.get("str"), 36) : 0,
 	};
