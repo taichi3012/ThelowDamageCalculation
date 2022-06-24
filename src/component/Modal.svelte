@@ -22,8 +22,8 @@
 <style>
 	.bg {
 		width: 100vw;
-		height: 100%;
-		position: absolute;
+		height: 100vh;
+		position: fixed;
 		top: 0;
 		left: 0;
 		backdrop-filter: blur(7px) brightness(80%);
