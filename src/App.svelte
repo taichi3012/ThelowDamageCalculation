@@ -4,6 +4,7 @@
 	import ThemeButton from "./component/ThemeButton.svelte";
 	import Modal from "./component/Modal.svelte";
 	import { applyTheme, copyToClipboard } from "./main";
+    import QuickResultView from "./component/QuickResultView.svelte";
 
 	export let skill_data;
 	export let over_strength_values;
@@ -243,6 +244,7 @@
 		</div>
 		<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
 		<ThemeButton bind:darkMode />
+		<QuickResultView {normalResult} {criticalResult} />
 		<Modal bind:this={modal} />
 	</div>
 </main>
