@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { blur, scale } from "svelte/transition";
 	export let show = false;
 

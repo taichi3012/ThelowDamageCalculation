@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 	import { applyTheme } from "../main";
 
-	export let darkMode;
+	export let darkMode: boolean;
 
 	function toggleDarkMode() {
 		darkMode = !darkMode;
-		localStorage.setItem("dark_mode", darkMode);
+		localStorage.setItem("dark_mode", "" + darkMode);
 		applyTheme();
 	}
 </script>

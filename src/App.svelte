@@ -1,36 +1,31 @@
-<script>
+<script lang="ts">
 	import { tweened } from "svelte/motion";
 	import { quartOut } from "svelte/easing";
 	import ThemeButton from "./component/ThemeButton.svelte";
 	import Modal from "./component/Modal.svelte";
 	import { applyTheme, copyToClipboard } from "./main";
-    import QuickResultView from "./component/QuickResultView.svelte";
+	import QuickResultView from "./component/QuickResultView.svelte";
+	
+	import type { SvelteComponent } from "svelte";
 
-	export let skill_data;
-	export let over_strength_values;
-	export let darkMode;
+	export let skill_data: { [key: string]: {name: string, multiply: number, availabilSpecial: boolean} };
+	export let over_strength_values: number[];
+	export let darkMode: boolean;
 
-	export let weaponDamage = "";
-	export let specialDamage = "";
-	export let parkGain = "";
-	export let jobGain = "";
-	export let equipGain = "";
+	export let weaponDamage = 0;
+	export let specialDamage = 0;
+	export let parkGain = 0;
+	export let jobGain = 0;
+	export let equipGain = 0;
 	let overStrength = "0";
 	export let numLegendStone = "0";
-	export let magicStone = {
-		level_1: false,
-		level_2: false,
-		level_3: false,
-		level_4: false,
-		"level_4.5": false,
-		level_5: false,
-	};
+	export let magicStone: { [key: string]: boolean };
 
 	export let skill = "general_attack";
 	export let strLevel = 0;
 
 	let link = "";
-	let modal = null;
+	let modal: SvelteComponent;
 
 	const normalResult = tweened(0, {
 		delay: 200,
@@ -44,7 +39,7 @@
 		easing: quartOut,
 	});
 
-	let magicStoneScales = {
+	let magicStoneScales: { [key: string]: number } = {
 		level_1: 1.1,
 		level_2: 1.15,
 		level_3: 1.23,
@@ -54,7 +49,7 @@
 	};
 
 	$: {
-		let normal = Number(weaponDamage);
+		let normal = weaponDamage;
 		if (skill_data[skill].availabilSpecial) {
 			normal += specialDamage;
 		}
@@ -82,19 +77,16 @@
 	}
 
 	function updateURLParameters() {
-		const url = new URL(window.location);
+		const url = new URL(window.location.href);
 		const params = new URLSearchParams();
-		const formatToAlignedNum = function(string) {
-			let value = parseFloat(string);
-
-			if (value !== +value.toFixed()) {
-				const decDigit = String(string).split(".")[1].length;
-				value = Math.round(value * (10 ** decDigit));
+		const formatToAlignedNum = function(val: number) {
+			if (val !== Math.round(val)) {
+				const decDigit = val.toString().split(".")[1].length;
 				
-				return value.toString(36) + "E" + -decDigit.toString(36);
+				return Math.round(val * (10 ** decDigit)).toString(36) + "E" + -decDigit.toString(36);
 			}
 
-			return value.toString(36);
+			return val.toString(36);
 		};
 
 		if (weaponDamage) params.set("wd", formatToAlignedNum(weaponDamage));
@@ -102,7 +94,7 @@
 		if (parkGain) params.set("pg", formatToAlignedNum(parkGain));
 		if (jobGain) params.set("jg", formatToAlignedNum(jobGain));
 		if (equipGain) params.set("eg", formatToAlignedNum(equipGain));
-		if (numLegendStone !== "0") params.set("ns", numLegendStone.toString(36));
+		if (numLegendStone !== "0") params.set("ns", Number(numLegendStone).toString(36));
 
 		if (skill !== "general_attack") params.set("sk", skill);
 
@@ -121,7 +113,7 @@
 		url.search = params.toString();
 		window.history.replaceState({}, "", url);
 
-		link = url;
+		link = url.href;
 	}
 
 	function copyURL() {
@@ -139,7 +131,7 @@
 
 <main on:load={applyTheme()}>
 	<div class="container vbox">
-		<h1 class="pointer" title="クリックでリンクをコピーできます" on:click={copyURL(link)}>
+		<h1 class="pointer" title="クリックでリンクをコピーできます" on:click={copyURL}>
 			Thelowダメージ計算
 			<span class="material-icons">share</span>
 		</h1>

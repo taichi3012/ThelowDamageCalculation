@@ -1,4 +1,4 @@
-export const skill_data = {
+export const skill_data: { [key: string]: {name: string, multiply: number, availabilSpecial: boolean} } = {
 	general_attack: {
 		name: "スキルなし(通常攻撃)",
 		multiply: 1.0,

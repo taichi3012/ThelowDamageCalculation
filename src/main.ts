@@ -25,8 +25,8 @@ export function applyTheme() {
 
 export function parseURLParams() {
 	const params = new URLSearchParams(location.search);
-	const parseFromAlignedNum = function(string) {
-		const arr = String(string).split("E");
+	const parseFromAlignedNum = function(str: string) {
+		const arr = String(str).split("E");
 		let value = parseInt(arr[0], 36);
 		let exp = 0;
 		
@@ -43,40 +43,39 @@ export function parseURLParams() {
 		return value;
 	};
 
-	const parsed = {
-		weaponDamage: params.has("wd") ? parseFromAlignedNum(params.get("wd")) : 0,
-		specialDamage: params.has("sd") ? parseFromAlignedNum(params.get("sd")) : 0,
-		parkGain: params.has("pg") ? parseFromAlignedNum(params.get("pg")) : 0,
-		jobGain: params.has("jg") ? parseFromAlignedNum(params.get("jg")) : 0,
-		equipGain: params.has("eg") ? parseFromAlignedNum(params.get("eg")) : 0,
-		numLegendStone: params.has("ns") ? parseInt(params.get("ns")).toString() : "0",
-		skill: params.has("sk") ? params.get("sk") : "general_attack",
-		strLevel: params.has("str") ? parseInt(params.get("str"), 36) : 0,
-	};
-
-	if (params.has("ms")) {
-		const flg = parseInt(params.get("ms"), 2);
-		parsed["magicStone"] = {
+	const flg = params.has("ms") ? parseInt(params.get("ms")! ,2) : 0;
+	let ms: { [key: string]: boolean } = {
 			level_1: ((flg >> 5) & 1) == 1,
 			level_2: ((flg >> 4) & 1) == 1,
 			level_3: ((flg >> 3) & 1) == 1,
 			level_4: ((flg >> 2) & 1) == 1,
 			"level_4.5": ((flg >> 1) & 1) == 1,
 			level_5: ((flg >> 0) & 1) == 1,
-		};
-	}
+	};
+
+	const parsed = {
+		weaponDamage: params.has("wd") ? parseFromAlignedNum(params.get("wd")!) : 0,
+		specialDamage: params.has("sd") ? parseFromAlignedNum(params.get("sd")!) : 0,
+		parkGain: params.has("pg") ? parseFromAlignedNum(params.get("pg")!) : 0,
+		jobGain: params.has("jg") ? parseFromAlignedNum(params.get("jg")!) : 0,
+		equipGain: params.has("eg") ? parseFromAlignedNum(params.get("eg")!) : 0,
+		numLegendStone: params.has("ns") ? parseInt(params.get("ns")!).toString() : "0",
+		skill: params.has("sk") ? params.get("sk")! : "general_attack",
+		strLevel: params.has("str") ? parseInt(params.get("str")!, 36) : 0,
+		magicStone: ms,
+	};
 
 	return parsed;
 }
 
-export function copyToClipboard(text) {
+export function copyToClipboard(text: string) {
 	const textarea = document.createElement("textarea");
 	document.body.append(textarea);
 	textarea.value = text;
 
 	textarea.select();
 	document.execCommand("copy");
-	textarea.remove(textarea);
+	textarea.remove();
 }
 
 export default app;

@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
 	import { fly } from "svelte/transition";
 
-    export let normalResult;
-    export let criticalResult;
+	import type { Tweened } from "svelte/motion";
+
+    export let normalResult: Tweened<number>;
+    export let criticalResult: Tweened<number>;
 
     let show = false;
 
