@@ -218,7 +218,7 @@
 							{/each}
 						</select>
 						<input
-							class="flex-grow-1"
+							class="flex-grow-1 pointer"
 							type="button"
 							value="OS値適用"
 							on:click={applyOverStrength}
