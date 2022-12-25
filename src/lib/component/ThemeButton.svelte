@@ -21,7 +21,7 @@
 	onMount(applyTheme);
 </script>
 
-<div on:click={toggleDarkMode}>
+<div on:click={toggleDarkMode} on:keydown={toggleDarkMode}>
 	<span class="material-icons" class:dark={darkMode} class:light={!darkMode}
 		>{darkMode ? "dark_mode" : "light_mode"}</span
 	>

@@ -151,6 +151,7 @@
 			class="pointer"
 			title="クリックでリンクをコピーできます"
 			on:click={copyURL}
+			on:keydown={copyURL}
 		>
 			Thelowダメージ計算
 			<span class="material-icons">share</span>

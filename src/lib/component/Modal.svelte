@@ -12,7 +12,7 @@
 </script>
 
 {#if show}
-	<div class="bg" transition:blur on:click={close}>
+	<div class="bg" transition:blur on:click={close} on:keydown={close}>
 		<div class="fg">
 			<span class="icon material-icons" transition:scale={{ delay: 250 }}>{icon}</span>
 			<p>{message}</p>
