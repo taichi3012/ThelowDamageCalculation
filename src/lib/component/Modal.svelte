@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { blur, scale } from "svelte/transition";
+	
 	export let show = false;
 
 	export let icon = "checked";
@@ -37,7 +38,9 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		user-select: none;
 	}
+	
 	.icon {
 		display: block;
 		font-size: 3em;

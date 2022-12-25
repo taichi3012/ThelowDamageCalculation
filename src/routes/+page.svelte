@@ -1,31 +1,34 @@
 <script lang="ts">
 	import { tweened } from "svelte/motion";
 	import { quartOut } from "svelte/easing";
-	import ThemeButton from "./component/ThemeButton.svelte";
-	import Modal from "./component/Modal.svelte";
-	import { applyTheme, copyToClipboard } from "./main";
-	import QuickResultView from "./component/QuickResultView.svelte";
-	
+
+	import Modal from "$lib/component/Modal.svelte";
+	import QuickResultView from "$lib/component/QuickResultView.svelte";
+	import ThemeButton from "$lib/component/ThemeButton.svelte";
+	import { OVER_STRENGTH_VALUES } from "$lib/data/parkData";
+	import { SKILL_DATA } from "$lib/data/skillData";
+
+	import type { PageData } from "./$types";
 	import type { SvelteComponent } from "svelte";
 
-	export let skill_data: { [key: string]: {name: string, multiply: number, availabilSpecial: boolean} };
-	export let over_strength_values: number[];
-	export let darkMode: boolean;
+	import "../app.css";
 
-	export let weaponDamage = 0;
-	export let specialDamage = 0;
-	export let parkGain = 0;
-	export let jobGain = 0;
-	export let equipGain = 0;
+	export let data: PageData;
+
+	let weaponDamage = data.weaponDamage;
+	let specialDamage = data.specialDamage;
+	let parkGain = data.parkGain;
+	let jobGain = data.jobGain;
+	let equipGain = data.equipGain;
 	let overStrength = "0";
-	export let numLegendStone = "0";
-	export let magicStone: { [key: string]: boolean };
-
-	export let skill = "general_attack";
-	export let strLevel = 0;
+	let numLegendStone = data.numLegendStone;
+	let magicStone: { [key: string]: boolean } = data.magicStone;
+	let skill = data.skill;
+	let strLevel = data.strLevel;
 
 	let link = "";
 	let modal: SvelteComponent;
+	let darkMode = data.darkMode;
 
 	const normalResult = tweened(0, {
 		delay: 200,
@@ -39,7 +42,7 @@
 		easing: quartOut,
 	});
 
-	let magicStoneScales: { [key: string]: number } = {
+	const magicStoneScales: { [key: string]: number } = {
 		level_1: 1.1,
 		level_2: 1.15,
 		level_3: 1.23,
@@ -50,7 +53,7 @@
 
 	$: {
 		let normal = weaponDamage;
-		if (skill_data[skill].availabilSpecial) {
+		if (SKILL_DATA[skill!].availabilSpecial) {
 			normal += specialDamage;
 		}
 
@@ -62,8 +65,8 @@
 			}
 		}
 
-		scale *= skill_data[skill].multiply;
-		scale *= strLevel ? 1 + 0.2 * Number(strLevel) : 1;
+		scale *= SKILL_DATA[skill!].multiply;
+		scale *= strLevel ? 1 + 0.2 * strLevel : 1;
 		scale *= 1.06 ** Number(numLegendStone);
 
 		normalResult.set(normal * scale);
@@ -73,17 +76,21 @@
 	}
 
 	function applyOverStrength() {
-		parkGain = over_strength_values[Number(overStrength)];
+		parkGain = OVER_STRENGTH_VALUES[Number(overStrength)];
 	}
 
 	function updateURLParameters() {
 		const url = new URL(window.location.href);
 		const params = new URLSearchParams();
-		const formatToAlignedNum = function(val: number) {
+		const formatToAlignedNum = function (val: number) {
 			if (val !== Math.round(val)) {
 				const decDigit = val.toString().split(".")[1].length;
-				
-				return Math.round(val * (10 ** decDigit)).toString(36) + "E" + -decDigit.toString(36);
+
+				return (
+					Math.round(val * 10 ** decDigit).toString(36) +
+					"E" +
+					-decDigit.toString(36)
+				);
 			}
 
 			return val.toString(36);
@@ -94,9 +101,10 @@
 		if (parkGain) params.set("pg", formatToAlignedNum(parkGain));
 		if (jobGain) params.set("jg", formatToAlignedNum(jobGain));
 		if (equipGain) params.set("eg", formatToAlignedNum(equipGain));
-		if (numLegendStone !== "0") params.set("ns", Number(numLegendStone).toString(36));
+		if (numLegendStone !== "0")
+			params.set("ns", Number(numLegendStone).toString(36));
 
-		if (skill !== "general_attack") params.set("sk", skill);
+		if (skill !== "general_attack") params.set("sk", skill!);
 
 		const ms = Object.keys(magicStone).reduce((acc, cur) => {
 			return acc + (magicStone[cur] ? 1 : 0);
@@ -117,7 +125,7 @@
 	}
 
 	function copyURL() {
-		copyToClipboard(link);
+		navigator.clipboard.writeText(link);
 		modal.$set({
 			show: true,
 			icon: "checked",
@@ -129,9 +137,21 @@
 	}
 </script>
 
-<main on:load={applyTheme()}>
+<svelte:head>
+	<title>TheLowダメージ計算機</title>
+	<meta
+		name="description"
+		content="Thelow 非公式のダメージ計算器。機能: スキル使用時の計算、攻撃力上昇エフェクト使用時の計算、レジェンド魔法石使用時の計算"
+	/>
+</svelte:head>
+
+<main>
 	<div class="container vbox">
-		<h1 class="pointer" title="クリックでリンクをコピーできます" on:click={copyURL}>
+		<h1
+			class="pointer"
+			title="クリックでリンクをコピーできます"
+			on:click={copyURL}
+		>
 			Thelowダメージ計算
 			<span class="material-icons">share</span>
 		</h1>
@@ -150,33 +170,58 @@
 				<h2>基本ダメージ</h2>
 				<section>
 					<label for="weaponDamageInput">武器の素ダメージ</label>
-					<input type="number" placeholder="例:300" bind:value={weaponDamage} />
+					<input
+						type="number"
+						placeholder="例:300"
+						bind:value={weaponDamage}
+					/>
 				</section>
 				<section>
 					<label for="specialDamageInput">特攻値</label>
-					<input type="number" placeholder="例:50" bind:value={specialDamage} />
+					<input
+						type="number"
+						placeholder="例:50"
+						bind:value={specialDamage}
+					/>
 				</section>
 				<section>
 					<label for="jobGainInput">職業補正(%)</label>
-					<input type="number" placeholder="例:10" bind:value={jobGain} />
+					<input
+						type="number"
+						placeholder="例:10"
+						bind:value={jobGain}
+					/>
 				</section>
 				<section>
 					<label for="equipGainInput">装備補正(%)</label>
-					<input type="number" placeholder="例:10" bind:value={equipGain} />
+					<input
+						type="number"
+						placeholder="例:10"
+						bind:value={equipGain}
+					/>
 				</section>
 				<section>
 					<label for="parkGainInput">パーク(%)</label>
-					<input type="number" placeholder="例:140" bind:value={parkGain} />
+					<input
+						type="number"
+						placeholder="例:140"
+						bind:value={parkGain}
+					/>
 				</section>
 				<section>
 					<span>オーバーストレンジ</span>
 					<div class="hbox">
 						<select class="flex-grow-3" bind:value={overStrength}>
-							{#each over_strength_values as _, i}
+							{#each OVER_STRENGTH_VALUES as _, i}
 								<option value={`${i}`}>{i}</option>
 							{/each}
 						</select>
-						<input class="flex-grow-1" type="button" value="OS値適用" on:click={applyOverStrength} />
+						<input
+							class="flex-grow-1"
+							type="button"
+							value="OS値適用"
+							on:click={applyOverStrength}
+						/>
 					</div>
 				</section>
 			</div>
@@ -184,7 +229,9 @@
 				<div class="magicstone padding vbox">
 					<h2>魔法石</h2>
 					<section class="vbox margin-1/2em">
-						<label for="legendValueSelector">レジェンド魔法石個数</label>
+						<label for="legendValueSelector"
+							>レジェンド魔法石個数</label
+						>
 						<select bind:value={numLegendStone}>
 							<option value="0">0個</option>
 							<option value="1">1個</option>
@@ -193,27 +240,51 @@
 						</select>
 					</section>
 					<section>
-						<input id="ms1" type="checkbox" bind:checked={magicStone["level_1"]} />
+						<input
+							id="ms1"
+							type="checkbox"
+							bind:checked={magicStone["level_1"]}
+						/>
 						<label for="ms1">特攻魔法石Level1</label>
 					</section>
 					<section>
-						<input id="ms2" type="checkbox" bind:checked={magicStone["level_2"]} />
+						<input
+							id="ms2"
+							type="checkbox"
+							bind:checked={magicStone["level_2"]}
+						/>
 						<label for="ms2">特攻魔法石Level2</label>
 					</section>
 					<section>
-						<input id="ms3" type="checkbox" bind:checked={magicStone["level_3"]} />
+						<input
+							id="ms3"
+							type="checkbox"
+							bind:checked={magicStone["level_3"]}
+						/>
 						<label for="ms3">特攻魔法石Level3</label>
 					</section>
 					<section>
-						<input id="ms4" type="checkbox" bind:checked={magicStone["level_4"]} />
+						<input
+							id="ms4"
+							type="checkbox"
+							bind:checked={magicStone["level_4"]}
+						/>
 						<label for="ms4">特攻魔法石Level4</label>
 					</section>
 					<section>
-						<input id="ms4.5" type="checkbox" bind:checked={magicStone["level_4.5"]} />
+						<input
+							id="ms4.5"
+							type="checkbox"
+							bind:checked={magicStone["level_4.5"]}
+						/>
 						<label for="ms4.5">特攻魔法石Level4.5</label>
 					</section>
 					<section>
-						<input id="ms5" type="checkbox" bind:checked={magicStone["level_5"]} />
+						<input
+							id="ms5"
+							type="checkbox"
+							bind:checked={magicStone["level_5"]}
+						/>
 						<label for="ms5">特攻魔法石Level5 or Legend</label>
 					</section>
 				</div>
@@ -222,19 +293,28 @@
 					<section>
 						<label for="skillSelector">スキル</label>
 						<select bind:value={skill}>
-							{#each Object.keys(skill_data) as id}
-								<option value={id}>{skill_data[id].name}</option>
+							{#each Object.keys(SKILL_DATA) as id}
+								<option value={id}>{SKILL_DATA[id].name}</option
+								>
 							{/each}
 						</select>
 					</section>
 					<section>
-						<label for="strengthEffectInput">攻撃力上昇エフェクトLv</label>
-						<input type="number" placeholder="例:5" bind:value={strLevel} />
+						<label for="strengthEffectInput"
+							>攻撃力上昇エフェクトLv</label
+						>
+						<input
+							type="number"
+							placeholder="例:5"
+							bind:value={strLevel}
+						/>
 					</section>
 				</div>
 			</div>
 		</div>
-		<p class="text-center">※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。</p>
+		<p class="text-center">
+			※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。
+		</p>
 		<ThemeButton bind:darkMode />
 		<QuickResultView {normalResult} {criticalResult} />
 		<Modal bind:this={modal} />
