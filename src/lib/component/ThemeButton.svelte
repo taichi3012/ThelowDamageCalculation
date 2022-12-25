@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyTheme } from "../main";
+	import { onMount } from "svelte";
 
 	export let darkMode: boolean;
 
@@ -8,6 +8,17 @@
 		localStorage.setItem("dark_mode", "" + darkMode);
 		applyTheme();
 	}
+
+	function applyTheme() {
+		//Apply theme attribute
+		if (darkMode) {
+			document.documentElement.setAttribute("theme", "dark");
+		} else {
+			document.documentElement.removeAttribute("theme");
+		}
+	}
+
+	onMount(applyTheme);
 </script>
 
 <div on:click={toggleDarkMode}>
