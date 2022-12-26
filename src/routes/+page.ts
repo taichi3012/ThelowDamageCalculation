@@ -1,8 +1,5 @@
 import type { PageLoad } from "./$types";
 
-export const ssr = false;
-export const prerender = true;
-
 export const load: PageLoad = ({ url }) => {
 	const params: URLSearchParams = url.searchParams;
 	const parseFromAlignedNum = function(str: string) {
@@ -42,6 +39,5 @@ export const load: PageLoad = ({ url }) => {
 			"level_4.5": ((msFlg >> 1) & 1) == 1,
 			level_5: ((msFlg >> 0) & 1) == 1,
 		},
-		darkMode: localStorage.getItem("dark_mode") == "true",
 	}
 }

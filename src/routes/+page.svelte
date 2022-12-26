@@ -12,6 +12,7 @@
 	import type { SvelteComponent } from "svelte";
 
 	import "../app.css";
+    import { browser } from "$app/environment";
 
 	export let data: PageData;
 
@@ -28,7 +29,6 @@
 
 	let link = "";
 	let modal: SvelteComponent;
-	let darkMode = data.darkMode;
 
 	const normalResult = tweened(0, {
 		delay: 200,
@@ -72,7 +72,9 @@
 		normalResult.set(normal * scale);
 		criticalResult.set(normal * scale * 1.15);
 
-		updateURLParameters();
+		if (browser) {
+			updateURLParameters();
+		}
 	}
 
 	function applyOverStrength() {
@@ -316,7 +318,7 @@
 		<p class="text-center">
 			※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。
 		</p>
-		<ThemeButton bind:darkMode />
+		<ThemeButton/>
 		<QuickResultView {normalResult} {criticalResult} />
 		<Modal bind:this={modal} />
 	</div>

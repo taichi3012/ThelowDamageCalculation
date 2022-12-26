@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 
-	export let darkMode: boolean;
+	let darkMode: boolean;
 
 	function toggleDarkMode() {
 		darkMode = !darkMode;
@@ -18,7 +18,10 @@
 		}
 	}
 
-	onMount(applyTheme);
+	onMount(() => {
+		darkMode = localStorage.getItem("dark_mode") == "true";
+		applyTheme();
+	});
 </script>
 
 <div on:click={toggleDarkMode} on:keydown={toggleDarkMode}>
