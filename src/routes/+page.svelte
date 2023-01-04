@@ -7,6 +7,8 @@
 	import ThemeButton from "$lib/component/ThemeButton.svelte";
 	import { OVER_STRENGTH_VALUES } from "$lib/data/parkData";
 	import { SKILL_DATA } from "$lib/data/skillData";
+	import MathUtil from "$lib/utils/mathUtil";
+    import StringUtil from "$lib/utils/stringUtil";
 
 	import type { PageData } from "./$types";
 	import type { SvelteComponent } from "svelte";
@@ -84,40 +86,42 @@
 	function updateURLParameters() {
 		const url = new URL(window.location.href);
 		const params = new URLSearchParams();
-		const formatToAlignedNum = function (val: number) {
-			if (val !== Math.round(val)) {
-				const decDigit = val.toString().split(".")[1].length;
-
-				return (
-					Math.round(val * 10 ** decDigit).toString(36) +
-					"E" +
-					-decDigit.toString(36)
-				);
+		const formatFractionalValues = function (val: number) {
+			if (Number.isInteger(val)) {
+				return MathUtil.toBaseIntString(val, 62);
 			}
 
-			return val.toString(36);
+			const intPart = MathUtil.toBaseIntString(Math.trunc(val), 62);
+			const fractionalPart = MathUtil.toBaseIntString(
+				parseInt(
+					StringUtil.reverse(val.toString().split(".")[1])
+				),
+				62
+			);
+
+			return intPart + "." + fractionalPart;
 		};
 
-		if (weaponDamage) params.set("wd", formatToAlignedNum(weaponDamage));
-		if (specialDamage) params.set("sd", formatToAlignedNum(specialDamage));
-		if (parkGain) params.set("pg", formatToAlignedNum(parkGain));
-		if (jobGain) params.set("jg", formatToAlignedNum(jobGain));
-		if (equipGain) params.set("eg", formatToAlignedNum(equipGain));
+		if (weaponDamage) params.set("wd", formatFractionalValues(weaponDamage));
+		if (specialDamage) params.set("sd", formatFractionalValues(specialDamage));
+		if (parkGain) params.set("pg", formatFractionalValues(parkGain));
+		if (jobGain) params.set("jg", formatFractionalValues(jobGain));
+		if (equipGain) params.set("eg", formatFractionalValues(equipGain));
 		if (numLegendStone !== "0")
-			params.set("ns", Number(numLegendStone).toString(36));
+			params.set("ns", numLegendStone);
 
 		if (skill !== "general_attack") params.set("sk", skill!);
 
-		const ms = Object.keys(magicStone).reduce((acc, cur) => {
-			return acc + (magicStone[cur] ? 1 : 0);
-		}, "");
+		const ms = Object.keys(magicStone)
+			.map<number>((val, ind) => magicStone[val] ? 2 ** ind : 0)
+			.reduce((pVal, cVal) => pVal + cVal);
 
-		if (ms !== "000000") {
-			params.set("ms", ms);
+		if (ms) {
+			params.set("ms", MathUtil.toBaseIntString(ms, 62));
 		}
 
 		if (strLevel) {
-			params.set("str", strLevel.toString(36));
+			params.set("str", MathUtil.toBaseIntString(Math.trunc(strLevel), 62));
 		}
 
 		url.search = params.toString();
