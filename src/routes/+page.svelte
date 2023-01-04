@@ -140,7 +140,7 @@
 </script>
 
 <svelte:head>
-	<title>TheLowダメージ計算機</title>
+	<title>TheLowダメージ計算機 for Vercel</title>
 	<meta
 		name="description"
 		content="Thelow 非公式のダメージ計算器。機能: スキル使用時の計算、攻撃力上昇エフェクト使用時の計算、レジェンド魔法石使用時の計算"
