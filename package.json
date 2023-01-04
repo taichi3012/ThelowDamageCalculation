@@ -1,7 +1,7 @@
 {
 	"name": "thelow-damage-calculation",
 	"version": "1.0.0",
-	"repository": "https://github.com/taichi3012/TheLowDamageCalculation.git",
+	"repository": "https://github.com/taichi3012/TheLowDamageCalculation.git#vercel",
 	"author": "https://github.com/taichi3012",
 	"license": "GNU General Public License v3.0",
 	"private": true,
