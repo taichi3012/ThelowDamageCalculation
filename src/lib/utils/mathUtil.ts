@@ -8,10 +8,10 @@ export default class MathUtil {
     ];
 
     static parseBaseInt(string: string, radix: number) {
-        if (radix > this.baseNumberCharacter.length) return NaN;
+        if (radix > this.baseNumberCharacter.length) return 0;
 
         string = string.split(".")[0];
-        if (!string.match(/^-?((?!0)[\da-zA-Z]+|0)$/)) return NaN;
+        if (!string.match(/^-?((?!0)[\da-zA-Z]+|0)$/)) return 0;
 
         const baseChars = this.baseNumberCharacter.slice(0, radix);
 
@@ -23,7 +23,7 @@ export default class MathUtil {
         for (const str of StringUtil.reverse(string)) {
             const index = baseChars.indexOf(str);
 
-            if (index === -1) return NaN;
+            if (index === -1) return 0;
 
             resultNum += index * radix ** digitRec;
             digitRec++;
