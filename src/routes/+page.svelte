@@ -55,7 +55,7 @@
 
 	$: {
 		let normal = weaponDamage;
-		if (SKILL_DATA[skill!].availabilSpecial) {
+		if (SKILL_DATA[skill].availabilSpecial) {
 			normal += specialDamage;
 		}
 
@@ -67,7 +67,7 @@
 			}
 		}
 
-		scale *= SKILL_DATA[skill!].multiply;
+		scale *= SKILL_DATA[skill].multiply;
 		scale *= strLevel ? 1 + 0.2 * strLevel : 1;
 		scale *= 1.06 ** Number(numLegendStone);
 
@@ -110,7 +110,7 @@
 		if (numLegendStone !== "0")
 			params.set("ns", numLegendStone);
 
-		if (skill !== "general_attack") params.set("sk", skill!);
+		if (skill !== "general_attack") params.set("sk", skill);
 
 		const ms = Object.keys(magicStone)
 			.map<number>((val, ind) => magicStone[val] ? 2 ** ind : 0)

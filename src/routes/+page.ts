@@ -1,3 +1,4 @@
+import { SKILL_DATA } from "$lib/data/skillData";
 import MathUtil from "$lib/utils/mathUtil";
 import StringUtil from "$lib/utils/stringUtil";
 
@@ -30,8 +31,8 @@ export const load: PageLoad = ({ url }) => {
 		parkGain: params.has("pg") ? parseFractionalValues(params.get("pg")!) : 0,
 		jobGain: params.has("jg") ? parseFractionalValues(params.get("jg")!) : 0,
 		equipGain: params.has("eg") ? parseFractionalValues(params.get("eg")!) : 0,
-		numLegendStone: params.has("ns") ? parseInt(params.get("ns")!).toString() : "0",
-		skill: params.has("sk") ? params.get("sk") : "general_attack",
+		numLegendStone: params.has("ns") && parseInt(params.get("ns")!) ? params.get("ns")! : "0",
+		skill: params.has("sk") && Object.keys(SKILL_DATA).includes(params.get("sk")!) ? params.get("sk")! : "general_attack",
 		strLevel: params.has("str") ? MathUtil.parseBaseInt(params.get("str")!, 62) : 0,
 		magicStone: {
 			level_1: ((msFlg >> 0) & 1) == 1,
