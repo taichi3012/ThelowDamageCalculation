@@ -149,6 +149,16 @@
 		name="description"
 		content="Thelow 非公式のダメージ計算器。機能: スキル使用時の計算、攻撃力上昇エフェクト使用時の計算、レジェンド魔法石使用時の計算"
 	/>
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@taichi3012" />
+	<meta property="og:url" content="https://thelow-damage-calculation-taichi3012.vercel.app" />
+	<meta property="og:title" content="TheLowダメージ計算機 for Vercel" />
+	<meta property="og:description" content="Thelow 非公式のダメージ計算器。機能: スキル使用時の計算、攻撃力上昇エフェクト使用時の計算、レジェンド魔法石使用時の計算" />
+	<meta property="og:image:type" content="image/png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image" content={data.ogImage} />
 </svelte:head>
 
 <main>

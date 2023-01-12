@@ -7,3 +7,8 @@ declare namespace App {
 	// interface PageData {}
 	// interface Platform {}
 }
+
+declare module '*?base64' {
+	const src: string
+	export default src
+}

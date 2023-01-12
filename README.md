@@ -21,3 +21,21 @@ Thelow 非公式のダメージ計算器
 `npm run dev`
 
 でライブサーバーが起動します.
+
+## ライセンス表記
+
+### Noto Sans Japanese
+
+[Noto Sans Japanease](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is licensed under the SIL Open Font License, Version 1.1.
+
+Copyright 2012 Google Inc.
+
+[SIL OPEN FONT LICENSE Version 1.1](https://scripts.sil.org/OFL_web)
+
+### Material Icons
+
+[Material Icons](https://fonts.google.com/icons) is licensed under the Apache License, Version 2.0.
+
+Copyright Google Inc.
+
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)

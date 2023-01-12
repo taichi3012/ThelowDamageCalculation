@@ -5,7 +5,9 @@ import StringUtil from "$lib/utils/stringUtil";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = ({ url }) => {
+	const ogImgBaseURL = "https://thelow-damage-calculation-taichi3012.vercel.app/api/og.png";
 	const params: URLSearchParams = url.searchParams;
+
 	const parseFractionalValues = function(string: string) {
 		const arr = string.split(".");
 		let val = MathUtil.parseBaseInt(arr[0], 62).toString();
@@ -42,5 +44,6 @@ export const load: PageLoad = ({ url }) => {
 			"level_4.5": ((msFlg >> 4) & 1) == 1,
 			level_5: ((msFlg >> 5) & 1) == 1,
 		},
+		ogImage: ogImgBaseURL + "?" + params.toString(),
 	}
 }
