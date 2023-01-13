@@ -78,7 +78,7 @@
 	}
 </script>
 
-<div class="container hbox" lang="ja-JP">
+<div class="container hbox gap-1-2em" lang="ja-JP">
 	<div class="result vbox space-around align-center">
 		<div class="vbox align-center">
 			通常
@@ -89,9 +89,9 @@
 			<span class="bold" style="font-size: {clacFontSize(criticalResult, 420, 80, 20)}px">{criticalResult}</span>
 		</div>
 	</div>
-	<div class="params hbox">
-		<div class="vbox flex-grow-1 align-stretch">
-			<div class="vbox align-stretch margin1-2em">
+	<div class="params hbox flex-grow-1">
+		<div class="vbox flex-grow-1 align-stretch gap-1-2em">
+			<div class="vbox align-stretch">
 				<span class="headline">基礎ダメージ</span>
 				<div class="hbox space-between">
 					武器ダメージ
@@ -102,7 +102,7 @@
 					<span>{getSigned(specialDamage)}</span>
 				</div>
 			</div>
-			<div class="vbox align-stretch margin1-2em">
+			<div class="vbox align-stretch">
 				<span class="headline">魔法石</span>
 				<div class="vbox">
 					{#each Object.entries(magicStone) as entry}
@@ -122,8 +122,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="vbox flex-grow-1 align-stretch">
-			<div class="vbox align-stretch margin1-2em">
+		<div class="vbox flex-grow-1 align-stretch gap-1-2em">
+			<div class="vbox align-stretch">
 				<span class="headline">加算値</span>
 				<div class="hbox space-between">
 					パーク
@@ -142,15 +142,17 @@
 					<span>{`${parkGain + jobGain + equipGain}%`}</span>
 				</div>
 			</div>
-			<div class="vbox align-stretch margin1-2em">
+			<div class="vbox align-stretch">
 				<span class="headline">その他</span>
-				<div class="vbox" style="margin-bottom: 0.5em;">
-					スキル
-					<span>{skillData.name}</span>
-				</div>
-				<div class="vbox">
-					攻撃力上昇エフェクト
-					<span>{`Level${strLevel}`}</span>
+				<div class="vbox gap-1-2em">
+					<div class="vbox">
+						スキル
+						<span>{skillData.name}</span>
+					</div>
+					<div class="vbox">
+						攻撃力上昇エフェクト
+						<span>{`Level${strLevel}`}</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -173,7 +175,8 @@
 	}
 
 	.params {
-		width: 65%;
+		margin: 1em 1em 1em auto;
+		gap: 1em;
 	}
 
 	.headline {
@@ -215,8 +218,8 @@
 		align-items: stretch;
 	}
 
-	.margin1-2em {
-		margin: 0.5em;
+	.gap-1-2em {
+		gap: 0.5em;
 	}
 
 	.flex-grow-1 {
