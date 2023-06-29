@@ -1,8 +1,5 @@
 import type { PageLoad } from "./$types";
 
-export const ssr = false;
-export const prerender = true;
-
 export const load: PageLoad = ({ url }) => {
 	const params: URLSearchParams = url.searchParams;
 	const parseFromAlignedNum = function(str: string) {
