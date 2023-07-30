@@ -91,6 +91,11 @@ export const SKILL_DATA: { [key: string]: SkillProp } = {
         multiply: 2.0,
         availabilSpecial: true,
     },
+    berserk: {
+        name: "バーサーク(狂気あり)",
+        multiply: 7.5,
+        availabilSpecial: true,
+    },
     blood_slash: {
         name: "血の斬撃",
         multiply: 2.5,
