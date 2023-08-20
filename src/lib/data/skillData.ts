@@ -96,6 +96,11 @@ export const SKILL_DATA: { [key: string]: SkillProp } = {
         multiply: 7.5,
         availabilSpecial: true,
     },
+    eclipse_special: {
+        name: "星輝神の歌声",
+        multiply: 1.5,
+        availabilSpecial: true,
+    },
     blood_slash: {
         name: "血の斬撃",
         multiply: 2.5,
