@@ -41,6 +41,16 @@ export const SKILL_DATA: { [key: string]: SkillProp } = {
         multiply: 1.1,
         availabilSpecial: true,
     },
+    maryokuzoufuku_boss: {
+        name: "魔力増幅(BOSS)",
+        multiply: 1.1,
+        availabilSpecial: true,
+    },
+    maryokuzoufuku_mob: {
+        name: "魔力増幅(MOB)",
+        multiply: 0.85,
+        availabilSpecial: true,
+    },
     volcano: {
         name: "ボルケーノ",
         multiply: 22.0,
