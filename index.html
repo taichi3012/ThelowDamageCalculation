@@ -4,23 +4,36 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<link defer rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-		<meta http-equiv="content-security-policy" content="">
-		<link rel="modulepreload" href="/ThelowDamageCalculation/_app/immutable/start-2014dbd6.js">
-		<link rel="modulepreload" href="/ThelowDamageCalculation/_app/immutable/chunks/index-8b3296f7.js">
-		<link rel="modulepreload" href="/ThelowDamageCalculation/_app/immutable/chunks/singletons-34eb542e.js">
-		<link rel="modulepreload" href="/ThelowDamageCalculation/_app/immutable/chunks/index-91df3bcc.js">
+		
+		<link rel="modulepreload" href="./_app/immutable/entry/start.BREZODqb.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/entry.X5qpnl8U.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/runtime.BUbLQ9qy.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.DkSSqLOx.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.EGxbHV44.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/store.isfeO1Cb.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/disclose-version.DTFQmwBY.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/props.DesdDNDX.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index-client.BMoHh-Zx.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div>
-		<script type="module" data-sveltekit-hydrate="45h">
-			import { start } from "/ThelowDamageCalculation/_app/immutable/start-2014dbd6.js";
+			<script>
+				{
+					__sveltekit_2c8kt8 = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						assets: "/ThelowDamageCalculation"
+					};
 
-			start({
-				env: {},
-				paths: {"base":"/ThelowDamageCalculation","assets":"/ThelowDamageCalculation"},
-				target: document.querySelector('[data-sveltekit-hydrate="45h"]').parentNode,
-				version: "1725200582812"
-			});
-		</script></div>
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.BREZODqb.js"),
+						import("./_app/immutable/entry/app.EGxbHV44.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		</div>
 	</body>
 </html>
