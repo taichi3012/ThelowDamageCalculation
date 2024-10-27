@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
-	onMount(() => {
-		document.documentElement.style.display = "block";
-	});
+  onMount(() => {
+    document.documentElement.style.display = "block";
+  });
 </script>
 
-<slot />
+<slot/>
 
 <style>
-	:global(:root) {
-		display: none;
-	}
+  :global(:root) {
+    display: none;
+  }
 </style>
