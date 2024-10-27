@@ -9,7 +9,6 @@
   import { SKILL_DATA } from "$lib/data/skillData";
 
   import type { PageData } from "./$types";
-  import type { SvelteComponent } from "svelte";
 
   import "../app.css";
 
@@ -27,7 +26,7 @@
   let strLevel = data.strLevel;
 
   let link = "";
-  let modal: SvelteComponent;
+  let modal: Modal;
   let darkMode = data.darkMode;
 
   const normalResult = tweened(0, {
@@ -126,13 +125,13 @@
 
   function copyURL() {
     navigator.clipboard.writeText(link);
-    modal.$set({
-      show: true,
-      icon: "checked",
-      message: "URLをコピーしました!",
-    });
+    modal.setContent(
+      "checked",
+      "URLをコピーしました!"
+    );
+    modal.open();
     setTimeout(() => {
-      modal.$set({ show: false });
+      modal.close();
     }, 1000 * 1.5);
   }
 </script>

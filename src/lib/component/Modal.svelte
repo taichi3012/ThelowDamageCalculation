@@ -1,11 +1,20 @@
 <script lang="ts">
   import { blur, scale } from "svelte/transition";
 
-  export let show = false;
-  export let icon = "checked";
-  export let message = "";
+  let show = false;
+  let icon = "checked";
+  let message = "";
 
-  function close() {
+  export function setContent(i: string, msg: string) {
+    icon = i;
+    message = msg;
+  }
+
+  export function open() {
+    show = true;
+  }
+
+  export function close() {
     show = false;
   }
 </script>
