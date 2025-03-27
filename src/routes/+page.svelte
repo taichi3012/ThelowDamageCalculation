@@ -24,6 +24,7 @@
   let magicStone: { [key: string]: boolean } = data.magicStone;
   let skill = data.skill;
   let strLevel = data.strLevel;
+  let dungeonDamageGain = 0;
 
   let link = "";
   let modal: Modal;
@@ -67,6 +68,7 @@
     scale *= SKILL_DATA[skill!].multiply;
     scale *= strLevel ? 1 + 0.2 * strLevel : 1;
     scale *= 1.06 ** Number(numLegendStone);
+    scale *= (1 + dungeonDamageGain / 100)
 
     normalResult.set(normal * scale);
     criticalResult.set(normal * scale * 1.15);
@@ -165,80 +167,75 @@
         <span class="text-big">{$criticalResult.toFixed(2)}</span>
       </div>
     </div>
-    <div class="params space-around">
-      <div class="basicdamage panel padding">
-        <h2>基本ダメージ</h2>
-        <section>
-          <label for="weaponDamageInput">武器の素ダメージ</label>
-          <input
-              type="number"
-              placeholder="例:300"
-              bind:value={weaponDamage}
-          />
-        </section>
-        <section>
-          <label for="specialDamageInput">特攻値</label>
-          <input
-              type="number"
-              placeholder="例:50"
-              bind:value={specialDamage}
-          />
-        </section>
-        <section>
-          <label for="jobGainInput">職業補正(%)</label>
-          <input
-              type="number"
-              placeholder="例:10"
-              bind:value={jobGain}
-          />
-        </section>
-        <section>
-          <label for="equipGainInput">装備補正(%)</label>
-          <input
-              type="number"
-              placeholder="例:10"
-              bind:value={equipGain}
-          />
-        </section>
-        <section>
-          <label for="parkGainInput">パーク(%)</label>
-          <input
-              type="number"
-              placeholder="例:140"
-              bind:value={parkGain}
-          />
-        </section>
-        <section>
-          <span>オーバーストレンジ</span>
-          <div class="hbox">
-            <select class="flex-grow-3" bind:value={overStrength}>
-              {#each OVER_STRENGTH_VALUES as _, i}
-                <option value={`${i}`}>{i}</option>
-              {/each}
-            </select>
+    <div class="params center">
+      <div class="vbox panel padding space-between">
+        <div class="category">
+          <h2>基本ダメージ</h2>
+          <section>
+            <label for="weaponDamageInput">武器の素ダメージ</label>
             <input
-                class="flex-grow-1 pointer"
-                type="button"
-                value="OS値適用"
-                on:click={applyOverStrength}
+                type="number"
+                placeholder="例:300"
+                bind:value={weaponDamage}
             />
-          </div>
-        </section>
-      </div>
-      <div class="vbox panel">
-        <div class="magicstone padding vbox">
-          <h2>魔法石</h2>
-          <section class="vbox margin-1/2em">
-            <label for="legendValueSelector"
-            >レジェンド魔法石個数</label
-            >
-            <select bind:value={numLegendStone}>
-              <option value="0">0個</option>
-              <option value="1">1個</option>
-              <option value="2">2個</option>
-              <option value="3">3個</option>
-            </select>
           </section>
+          <section>
+            <label for="specialDamageInput">特攻値</label>
+            <input
+                type="number"
+                placeholder="例:50"
+                bind:value={specialDamage}
+            />
+          </section>
+        </div>
+        <div class="category">
+          <h2>補正</h2>
+          <section>
+            <label for="jobGainInput">職業補正(%)</label>
+            <input
+                type="number"
+                placeholder="例:10"
+                bind:value={jobGain}
+            />
+          </section>
+          <section>
+            <label for="equipGainInput">装備補正(%)</label>
+            <input
+                type="number"
+                placeholder="例:10"
+                bind:value={equipGain}
+            />
+          </section>
+          <section>
+            <label for="parkGainInput">パーク(%)</label>
+            <input
+                type="number"
+                placeholder="例:140"
+                bind:value={parkGain}
+            />
+          </section>
+          <section>
+            <span>オーバーストレンジ</span>
+            <div class="hbox">
+              <select class="flex-grow-3" bind:value={overStrength}>
+                {#each OVER_STRENGTH_VALUES as _, i}
+                  <option value={`${i}`}>{i}</option>
+                {/each}
+              </select>
+              <button
+                  class="flex-grow-1 pointer"
+                  type="button"
+                  on:click={applyOverStrength}
+              >
+                OS値適用
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div class="vbox panel padding space-between">
+        <div class="vbox">
+          <h2>魔法石</h2>
           <section>
             <input
                 id="ms1"
@@ -287,26 +284,46 @@
             />
             <label for="ms5">特攻魔法石Level5 or Legend</label>
           </section>
+          <section class="vbox margin-1/2em">
+            <label for="legendValueSelector">
+              レジェンド魔法石個数
+            </label>
+            <select bind:value={numLegendStone}>
+              <option value="0">0個</option>
+              <option value="1">1個</option>
+              <option value="2">2個</option>
+              <option value="3">3個</option>
+            </select>
+          </section>
         </div>
-        <div class="othereffect">
+        <div class="category">
           <h2>その他</h2>
           <section>
             <label for="skillSelector">スキル</label>
             <select bind:value={skill}>
               {#each Object.keys(SKILL_DATA) as id}
-                <option value={id}>{SKILL_DATA[id].name}</option
-                >
+                <option value={id}>{SKILL_DATA[id].name}</option>
               {/each}
             </select>
           </section>
           <section>
-            <label for="strengthEffectInput"
-            >攻撃力上昇エフェクトLv</label
-            >
+            <label for="strengthEffectInput">
+              攻撃力上昇エフェクトLv
+            </label>
             <input
                 type="number"
                 placeholder="例:5"
                 bind:value={strLevel}
+            />
+          </section>
+          <section>
+            <label for="dungeonDamageGainInput">
+              特定の敵に対してダメージ増加(合計%)
+            </label>
+            <input
+                type="number"
+                placeholder="例:5"
+                bind:value={dungeonDamageGain}
             />
           </section>
         </div>
@@ -358,22 +375,12 @@
     min-width: 40%;
   }
 
-  .basicdamage {
+  .category {
     display: flex;
     flex-direction: column;
   }
 
-  .basicdamage section {
-    display: flex;
-    flex-direction: column;
-    margin: 0.5em;
-  }
-
-  .othereffect {
-    padding: 0 1em;
-  }
-
-  .othereffect section {
+  .category section {
     display: flex;
     flex-direction: column;
     margin: 0.5em;

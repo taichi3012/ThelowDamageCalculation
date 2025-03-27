@@ -34,7 +34,7 @@ input[type="number"] {
   outline: none;
 }
 
-input[type="button"] {
+button {
   color: var(--text-main);
   background: var(--bg-sub);
   border: 1px solid var(--text-sub);
@@ -43,6 +43,7 @@ input[type="button"] {
   margin: 0.2em;
   border-radius: 0.4em;
   outline: none;
+  line-height: 0;
 }
 
 input[type="checkbox"] {
@@ -132,6 +133,14 @@ small {
 
 .space-around {
   justify-content: space-around;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.center {
+  justify-content: center;
 }
 
 .text-big {
