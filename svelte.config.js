@@ -10,7 +10,7 @@ export default {
   kit: {
     adapter: adapter(),
     paths: {
-      base: process.argv.includes('dev') ? '' : '/ThelowDamageCalculation',
+      base: process.argv.includes('dev') ? '' : process.env.BASE_PATH,
     },
   }
 };
