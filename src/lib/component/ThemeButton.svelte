@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import {onMount, tick} from "svelte";
 
-  export let darkMode: boolean;
+  let darkMode: boolean = $state(false);
 
   function toggleDarkMode() {
     darkMode = !darkMode;
@@ -10,7 +10,6 @@
   }
 
   function applyTheme() {
-    //Apply theme attribute
     if (darkMode) {
       document.documentElement.setAttribute("theme", "dark");
     } else {
@@ -18,25 +17,35 @@
     }
   }
 
-  onMount(applyTheme);
+  onMount(async () => {
+    document.body.style.transition = "none";
+    await tick();
+    darkMode = localStorage.getItem("dark_mode") == "true";
+    applyTheme();
+    await tick();
+    document.body.style.transition = "";
+  });
 </script>
 
-<div on:click={toggleDarkMode} on:keydown={toggleDarkMode}>
+<button onclick={toggleDarkMode}>
   <span class="material-icons" class:dark={darkMode} class:light={!darkMode}>
     {darkMode ? "dark_mode" : "light_mode"}
   </span>
-</div>
+</button>
 
 <style>
-  div {
+  button {
+    padding: 0;
+    border: none;
+    outline: none;
+    font: inherit;
+    color: inherit;
     width: 3em;
     border-radius: 1em;
     background: var(--bg-sub);
     user-select: none;
     cursor: pointer;
-    position: absolute;
-    top: 1em;
-    right: 1em;
+    margin: 0 0.25em;
     height: 1.5em;
     display: flex;
     align-items: center;
@@ -51,6 +60,5 @@
   .dark {
     transition: transform ease-in 0.3s;
     transform: translateX(0.5em);
-    justify-content: right;
   }
 </style>

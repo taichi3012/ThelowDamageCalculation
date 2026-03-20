@@ -1,7 +1,8 @@
 import type { PageLoad } from "./$types";
+import type { Parameter } from "$lib/App.svelte";
 
 export const load: PageLoad = ({ url }) => {
-  const params: URLSearchParams = url.searchParams;
+  const urlParams: URLSearchParams = url.searchParams;
   const parseFromAlignedNum = function(str: string) {
     const arr = str.split("E");
     let value = parseInt(arr[0], 36);
@@ -20,18 +21,17 @@ export const load: PageLoad = ({ url }) => {
     return value;
   };
 
-  const msFlg: number = params.has("ms") ? parseInt(params.get("ms")!, 2) : 0;
-
-  return {
-    weaponDamage: params.has("wd") ? parseFromAlignedNum(params.get("wd")!) : 0,
-    specialDamage: params.has("sd") ? parseFromAlignedNum(params.get("sd")!) : 0,
-    parkGain: params.has("pg") ? parseFromAlignedNum(params.get("pg")!) : 0,
-    jobGain: params.has("jg") ? parseFromAlignedNum(params.get("jg")!) : 0,
-    equipGain: params.has("eg") ? parseFromAlignedNum(params.get("eg")!) : 0,
-    numLegendStone: params.has("ns") ? parseInt(params.get("ns")!).toString() : "0",
-    skill: params.has("sk") ? params.get("sk") : "general_attack",
-    strLevel: params.has("str") ? parseInt(params.get("str")!, 36) : 0,
-    magicStone: {
+  const msFlg: number = urlParams.has("ms") ? parseInt(urlParams.get("ms")!, 2) : 0;
+  const params: Parameter = {
+    weaponDamage: urlParams.has("wd") ? parseFromAlignedNum(urlParams.get("wd")!) : 0,
+    specialDamage: urlParams.has("sd") ? parseFromAlignedNum(urlParams.get("sd")!) : 0,
+    parkGain: urlParams.has("pg") ? parseFromAlignedNum(urlParams.get("pg")!) : 0,
+    jobGain: urlParams.has("jg") ? parseFromAlignedNum(urlParams.get("jg")!) : 0,
+    equipGain: urlParams.has("eg") ? parseFromAlignedNum(urlParams.get("eg")!) : 0,
+    numLegendStone: urlParams.has("ns") ? parseInt(urlParams.get("ns")!) : 0,
+    skill: urlParams.has("sk") ? urlParams.get("sk")! : "general_attack",
+    strLevel: urlParams.has("str") ? parseInt(urlParams.get("str")!, 36) : 0,
+    magicStones: {
       level_1: ((msFlg >> 5) & 1) == 1,
       level_2: ((msFlg >> 4) & 1) == 1,
       level_3: ((msFlg >> 3) & 1) == 1,
@@ -39,6 +39,10 @@ export const load: PageLoad = ({ url }) => {
       "level_4.5": ((msFlg >> 1) & 1) == 1,
       level_5: ((msFlg >> 0) & 1) == 1,
     },
-    darkMode: localStorage.getItem("dark_mode") == "true",
-  }
+    dungeonDamageGain: 0
+  };
+
+  return {
+    params: params
+  };
 }
