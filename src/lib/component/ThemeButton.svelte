@@ -23,6 +23,7 @@
     darkMode = localStorage.getItem("dark_mode") == "true";
     applyTheme();
     await tick();
+    await tick();
     document.body.style.transition = "";
   });
 </script>
