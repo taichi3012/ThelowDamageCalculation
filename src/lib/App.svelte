@@ -134,6 +134,14 @@
         <div class="category">
           <h2>補正</h2>
           <label>
+            職業補正(%)
+            <input
+                type="number"
+                placeholder="例:10"
+                bind:value={params.jobGain}
+            />
+          </label>
+          <label>
             装備補正(%)
             <input
                 type="number"
