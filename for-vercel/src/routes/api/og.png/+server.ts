@@ -9,6 +9,8 @@ import satori from "satori";
 import {html as toReactNode} from "satori-html";
 
 import type {RequestHandler} from "./$types";
+import type {Parameter} from "thelow-damage-calculation/App.svelte";
+import {render} from "svelte/server";
 
 export const GET = (async ({url}) => {
   const searchParams = url.searchParams;
@@ -16,23 +18,23 @@ export const GET = (async ({url}) => {
 
   if (!searchParams.toString()) {
     reactNode = toReactNode`
-			<div
-				style="
-					display: flex;
-					flex-direction: column;
-					width: 100%;
-					height: 100%;
-					justify-content: space-around;
-					align-items: center;
-					background-color: white;
-					font-family: 'Noto Sans JP';
-					font-size: 100px;
-					font-weight: bold;
-				"
-			>
-				TheLowダメージ計算
-			</div>
-		`;
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          height: 100%;
+          justify-content: space-around;
+          align-items: center;
+          background-color: white;
+          font-family: 'Noto Sans JP';
+          font-size: 100px;
+          font-weight: bold;
+        "
+      >
+        TheLowダメージ計算
+      </div>
+    `;
   } else {
     const parseFractionalValues = (string: string) => {
       const arr = string.split(".");
@@ -53,16 +55,16 @@ export const GET = (async ({url}) => {
     };
 
     const msFlg: number = searchParams.has("ms") ? MathUtil.parseBaseInt(searchParams.get("ms")!, 62) : 0;
-    const componentProps = {
+    const componentProps: Parameter = {
       weaponDamage: searchParams.has("wd") ? parseFractionalValues(searchParams.get("wd")!) : 0,
       specialDamage: searchParams.has("sd") ? parseFractionalValues(searchParams.get("sd")!) : 0,
       parkGain: searchParams.has("pg") ? parseFractionalValues(searchParams.get("pg")!) : 0,
       jobGain: searchParams.has("jg") ? parseFractionalValues(searchParams.get("jg")!) : 0,
       equipGain: searchParams.has("eg") ? parseFractionalValues(searchParams.get("eg")!) : 0,
       numLegendStone: searchParams.has("ns") ? parseInt(searchParams.get("ns")!) || 0 : 0,
-      skill: searchParams.has("sk") ? searchParams.get("sk") : "general_attack",
+      skill: searchParams.has("sk") ? searchParams.get("sk")! : "general_attack",
       strLevel: searchParams.has("str") ? MathUtil.parseBaseInt(searchParams.get("str")!, 62) : 0,
-      magicStone: {
+      magicStones: {
         level_1: ((msFlg >> 0) & 1) == 1,
         level_2: ((msFlg >> 1) & 1) == 1,
         level_3: ((msFlg >> 2) & 1) == 1,
@@ -70,10 +72,11 @@ export const GET = (async ({url}) => {
         "level_4.5": ((msFlg >> 4) & 1) == 1,
         level_5: ((msFlg >> 5) & 1) == 1,
       },
-    }
+      dungeonDamageGain: 0
+    };
 
-    const markup = (ImageTemplate as any).render(componentProps);
-    reactNode = toReactNode(`${markup.html}<style>${markup.css.code}</style>`);
+    const { html, head } = render(ImageTemplate, { props: { params: componentProps }});
+    reactNode = toReactNode(`${html}<head>${head}</head>`);
   }
 
   const svg = await satori(
@@ -106,5 +109,6 @@ export const GET = (async ({url}) => {
     headers: {"Content-Type": "image/png", "Cache-Control": dev ? "max-age=0" : "max-age=604800"},
   };
 
+  // @ts-ignore
   return (new Response(img, init));
 }) satisfies RequestHandler;

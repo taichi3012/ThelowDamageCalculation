@@ -1,24 +1,31 @@
 <script lang="ts">
   import checkBox from "$lib/icons/check_box_black_36dp.svg?raw";
   import checkBoxOutline from "$lib/icons/check_box_outline_blank_black_36dp.svg?raw";
-  import {SKILL_DATA} from "$lib/data/skillData";
+  import {SKILL_DATA} from "thelow-damage-calculation";
 
-  export let weaponDamage = 0;
-  export let specialDamage = 0;
-  export let parkGain = 0;
-  export let jobGain = 0;
-  export let equipGain = 0;
-  export let numLegendStone = 0;
-  export let magicStone: { [key: string]: boolean } = {
-    level_1: false,
-    level_2: false,
-    level_3: false,
-    level_4: false,
-    "level_4.5": true,
-    level_5: false,
-  };
-  export let skill = "general_attack";
-  export let strLevel = 0;
+  import type {Parameter} from "thelow-damage-calculation/App.svelte";
+
+  let {
+    params = {
+      weaponDamage: 0,
+      specialDamage: 0,
+      parkGain: 0,
+      jobGain: 0,
+      equipGain: 0,
+      numLegendStone: 0,
+      magicStones: {
+        level_1: false,
+        level_2: false,
+        level_3: false,
+        level_4: false,
+        "level_4.5": false,
+        level_5: false
+      },
+      skill: "general_attack",
+      strLevel: 0,
+      dungeonDamageGain: 0,
+    }
+  }: { params: Parameter } = $props();
 
   const magicStoneScales: { [key: string]: number } = {
     level_1: 1.1,
@@ -38,9 +45,9 @@
     level_5: "魔法石Level5 or Leg",
   };
 
-  let skillData = SKILL_DATA[skill] || SKILL_DATA["general_attack"];
+  let skillData = SKILL_DATA[params.skill] || SKILL_DATA["general_attack"];
 
-  let magicStoneMul = Object.entries(magicStone)
+  let magicStoneMul = Object.entries(params.magicStones)
     .filter(v => v[1])
     .reduce((pv, cv) => pv * magicStoneScales[cv[0]], 1);
 
@@ -50,12 +57,12 @@
 
   function findValue() {
     let value = 0;
-    value += weaponDamage + (skillData.availabilSpecial ? specialDamage : 0);
+    value += params.weaponDamage + (skillData.specialAttackAvailable ? params.specialDamage : 0);
     value *= magicStoneMul;
-    value *= (100 + parkGain + jobGain + equipGain) / 100;
+    value *= (100 + params.parkGain + params.jobGain + params.equipGain) / 100;
     value *= skillData.multiply;
-    value *= 1 + 0.2 * strLevel;
-    value *= 1.06 ** numLegendStone;
+    value *= 1 + 0.2 * params.strLevel;
+    value *= 1.06 ** params.numLegendStone;
 
     return value
   }
@@ -79,6 +86,8 @@
   }
 </script>
 
+<svelte:options css="injected" />
+
 <div class="container hbox gap-1-2em" lang="ja-JP">
   <div class="result vbox space-around align-center">
     <div class="vbox align-center">
@@ -96,17 +105,17 @@
         <span class="headline">基礎ダメージ</span>
         <div class="hbox space-between">
           武器ダメージ
-          <span>{getSigned(weaponDamage)}</span>
+          <span>{getSigned(params.weaponDamage)}</span>
         </div>
         <div class="hbox space-between">
           特攻値
-          <span>{getSigned(specialDamage)}</span>
+          <span>{getSigned(params.specialDamage)}</span>
         </div>
       </div>
       <div class="vbox align-stretch">
         <span class="headline">魔法石</span>
         <div class="vbox">
-          {#each Object.entries(magicStone) as entry}
+          {#each Object.entries(params.magicStones) as entry}
             <div class="hbox">
               <span style="align-self: center;">{@html entry[1] ? checkBox : checkBoxOutline}</span>
               <span>{magicStoneDisplayNames[entry[0]]}</span>
@@ -115,11 +124,11 @@
         </div>
         <div class="hbox space-between">
           レジェンド魔法石
-          <span>{`${numLegendStone}個`}</span>
+          <span>{`${params.numLegendStone}個`}</span>
         </div>
         <div class="reduce-value hbox space-between">
           倍率(四捨五入)
-          <span>{`×${(magicStoneMul * (1.06 ** numLegendStone)).toFixed(3)}`}</span>
+          <span>{`×${(magicStoneMul * (1.06 ** params.numLegendStone)).toFixed(3)}`}</span>
         </div>
       </div>
     </div>
@@ -128,19 +137,19 @@
         <span class="headline">加算値</span>
         <div class="hbox space-between">
           パーク
-          <span>{`${parkGain}%`}</span>
+          <span>{`${params.parkGain}%`}</span>
         </div>
         <div class="hbox space-between">
           職業補正
-          <span>{`${jobGain}%`}</span>
+          <span>{`${params.jobGain}%`}</span>
         </div>
         <div class="hbox space-between">
           装備補正
-          <span>{`${equipGain}%`}</span>
+          <span>{`${params.equipGain}%`}</span>
         </div>
         <div class="reduce-value hbox space-between">
           合計
-          <span>{`${parkGain + jobGain + equipGain}%`}</span>
+          <span>{`${params.parkGain + params.jobGain + params.equipGain}%`}</span>
         </div>
       </div>
       <div class="vbox align-stretch">
@@ -152,7 +161,7 @@
           </div>
           <div class="vbox">
             攻撃力上昇エフェクト
-            <span>{`Level${strLevel}`}</span>
+            <span>{`Level${params.strLevel}`}</span>
           </div>
         </div>
       </div>

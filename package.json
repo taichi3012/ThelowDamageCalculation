@@ -29,6 +29,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js"
+    },
+    "./App.svelte": {
+      "types": "./dist/App.svelte.d.ts",
+      "svelte": "./dist/App.svelte"
     }
   },
   "peerDependencies": {

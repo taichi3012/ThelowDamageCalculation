@@ -1,1 +1,1 @@
-export * from "./App.svelte";
+export {SKILL_DATA} from "$lib/data/skillData"
