@@ -26,7 +26,8 @@ Thelow 非公式のダメージ計算器
 
 ### Noto Sans Japanese
 
-[Noto Sans Japanease](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is licensed under the SIL Open Font License, Version 1.1.
+[Noto Sans Japanease](https://fonts.google.com/noto/specimen/Noto+Sans+JP) is licensed under the SIL Open Font License,
+Version 1.1.
 
 Copyright 2012 Google Inc.
 

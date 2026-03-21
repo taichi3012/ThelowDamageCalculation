@@ -21,25 +21,27 @@
     dungeonDamageGain: number;
   }
 
-  let { params = $bindable({
-    weaponDamage: 0,
-    specialDamage: 0,
-    parkGain: 0,
-    jobGain: 0,
-    equipGain: 0,
-    numLegendStone: 0,
-    magicStones: {
-      level_1: false,
-      level_2: false,
-      level_3: false,
-      level_4: false,
-      "level_4.5": false,
-      level_5: false
-    },
-    skill: "general_attack",
-    strLevel: 0,
-    dungeonDamageGain: 0,
-  }) }: { params: Parameter } = $props();
+  let {
+    params = $bindable({
+      weaponDamage: 0,
+      specialDamage: 0,
+      parkGain: 0,
+      jobGain: 0,
+      equipGain: 0,
+      numLegendStone: 0,
+      magicStones: {
+        level_1: false,
+        level_2: false,
+        level_3: false,
+        level_4: false,
+        "level_4.5": false,
+        level_5: false
+      },
+      skill: "general_attack",
+      strLevel: 0,
+      dungeonDamageGain: 0,
+    })
+  }: { params: Parameter } = $props();
 
   let selectedParkGain = $state(0);
 
@@ -94,7 +96,7 @@
 </script>
 
 <svelte:head>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </svelte:head>
 
 <main>
@@ -117,17 +119,17 @@
           <label>
             武器の素ダメージ
             <input
-                type="number"
-                placeholder="例:300"
                 bind:value={params.weaponDamage}
+                placeholder="例:300"
+                type="number"
             />
           </label>
           <label>
             特攻値
             <input
-                type="number"
-                placeholder="例:50"
                 bind:value={params.specialDamage}
+                placeholder="例:50"
+                type="number"
             />
           </label>
         </div>
@@ -136,31 +138,31 @@
           <label>
             職業補正(%)
             <input
-                type="number"
-                placeholder="例:10"
                 bind:value={params.jobGain}
+                placeholder="例:10"
+                type="number"
             />
           </label>
           <label>
             装備補正(%)
             <input
-                type="number"
-                placeholder="例:10"
                 bind:value={params.equipGain}
+                placeholder="例:10"
+                type="number"
             />
           </label>
           <label>
             パーク(%)
             <input
-                type="number"
-                placeholder="例:140"
                 bind:value={params.parkGain}
+                placeholder="例:140"
+                type="number"
             />
           </label>
           <label>
             オーバーストレンジ
             <span class="hbox">
-              <select class="flex-grow-3" bind:value={selectedParkGain}>
+              <select bind:value={selectedParkGain} class="flex-grow-3">
                 {#each OVER_STRENGTH_VALUES as v, i}
                   <option value={v}>{i}</option>
                 {/each}
@@ -181,48 +183,48 @@
           <label>
             特攻魔法石Level1
             <input
+                bind:checked={params.magicStones.level_1}
                 id="ms1"
                 type="checkbox"
-                bind:checked={params.magicStones.level_1}
             />
           </label>
           <label>
             特攻魔法石Level2
             <input
+                bind:checked={params.magicStones.level_2}
                 id="ms2"
                 type="checkbox"
-                bind:checked={params.magicStones.level_2}
             />
           </label>
           <label>
             特攻魔法石Level3
             <input
+                bind:checked={params.magicStones.level_3}
                 id="ms3"
                 type="checkbox"
-                bind:checked={params.magicStones.level_3}
             />
           </label>
           <label>
             特攻魔法石Level4
             <input
+                bind:checked={params.magicStones.level_4}
                 id="ms4"
                 type="checkbox"
-                bind:checked={params.magicStones.level_4}
             />
           </label>
           <label>
             特攻魔法石Level4.5
             <input
+                bind:checked={params.magicStones["level_4.5"]}
                 id="ms4.5"
                 type="checkbox"
-                bind:checked={params.magicStones["level_4.5"]}
             />
           </label>
           <label>
             特攻魔法石Level5 or Legend
             <input
-                type="checkbox"
                 bind:checked={params.magicStones.level_5}
+                type="checkbox"
             />
           </label>
           <label class="vbox margin-1/2em">
@@ -248,17 +250,17 @@
           <label>
             攻撃力上昇エフェクトLv
             <input
-                type="number"
-                placeholder="例:5"
                 bind:value={params.strLevel}
+                placeholder="例:5"
+                type="number"
             />
           </label>
           <label>
             特定の敵に対してダメージ増加(合計%)
             <input
-                type="number"
-                placeholder="例:5"
                 bind:value={params.dungeonDamageGain}
+                placeholder="例:5"
+                type="number"
             />
           </label>
         </div>
@@ -268,7 +270,7 @@
       ※特攻値の乗らないスキル(ショックストーンなど)は、特攻値を除いて計算しています。
     </p>
   </div>
-  <QuickResultView normalResult={normalResult.current} criticalResult={criticalResult.current}/>
+  <QuickResultView criticalResult={criticalResult.current} normalResult={normalResult.current}/>
   <div class="top-button">
     <ThemeButton/>
     <ShareButton/>

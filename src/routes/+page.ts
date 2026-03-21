@@ -1,9 +1,9 @@
-import type { PageLoad } from "./$types";
-import type { Parameter } from "$lib/App.svelte";
+import type {PageLoad} from "./$types";
+import type {Parameter} from "$lib/App.svelte";
 
-export const load: PageLoad = ({ url }) => {
+export const load: PageLoad = ({url}) => {
   const urlParams: URLSearchParams = url.searchParams;
-  const parseFromAlignedNum = function(str: string) {
+  const parseFromAlignedNum = function (str: string) {
     const arr = str.split("E");
     let value = parseInt(arr[0], 36);
     let exp = 0;

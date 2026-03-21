@@ -1,29 +1,29 @@
 {
-	"name": "thelow-damage-calculation",
-	"version": "1.0.0",
-	"repository": "https://github.com/taichi3012/TheLowDamageCalculation.git#vercel",
-	"author": "https://github.com/taichi3012",
-	"license": "GNU General Public License v3.0",
-	"private": true,
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
-	},
-	"devDependencies": {
-		"@resvg/resvg-js": "^2.6.2",
-		"@sveltejs/adapter-vercel": "^6.3.3",
-		"@sveltejs/kit": "^2.55.0",
-		"satori": "^0.26.0",
-		"satori-html": "^0.3.2",
-		"svelte": "^5.54.1",
-		"svelte-check": "^4.4.5",
-		"tslib": "^2.8.1",
-		"typescript": "^5.9.3",
-		"vite": "^8.0.1"
-	},
-	"type": "module"
+  "name": "thelow-damage-calculation",
+  "version": "1.0.0",
+  "repository": "https://github.com/taichi3012/TheLowDamageCalculation.git#vercel",
+  "author": "https://github.com/taichi3012",
+  "license": "GNU General Public License v3.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@sveltejs/adapter-vercel": "^6.3.3",
+    "@sveltejs/kit": "^2.55.0",
+    "satori": "^0.26.0",
+    "satori-html": "^0.3.2",
+    "svelte": "^5.54.1",
+    "svelte-check": "^4.4.5",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.1"
+  },
+  "type": "module"
 }

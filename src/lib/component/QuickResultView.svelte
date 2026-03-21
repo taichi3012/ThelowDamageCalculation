@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { fade } from "svelte/transition";
+  import {onMount} from "svelte";
+  import {fade} from "svelte/transition";
 
   let {
     normalResult,
@@ -14,7 +14,7 @@
       (entries) => {
         entries.forEach((e) => (show = !e.isIntersecting));
       },
-      { threshold: 0.75 }
+      {threshold: 0.75}
     );
 
     observer.observe(

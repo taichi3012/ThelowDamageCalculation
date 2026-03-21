@@ -49,12 +49,12 @@ input[type="checkbox"] {
   display: none;
 }
 
-input[type="checkbox"]+label {
+input[type="checkbox"] + label {
   user-select: none;
   padding-left: 1em;
 }
 
-input[type="checkbox"]+label::before {
+input[type="checkbox"] + label::before {
   font-family: 'Material Icons';
   display: inline-block;
   cursor: pointer;
@@ -64,12 +64,12 @@ input[type="checkbox"]+label::before {
   left: -0.2em;
 }
 
-input[type=checkbox]+label::before {
+input[type=checkbox] + label::before {
   font-family: 'Material Icons';
   content: "\e835";
 }
 
-input[type=checkbox]:checked+label::before {
+input[type=checkbox]:checked + label::before {
   font-family: 'Material Icons';
   content: "\e876";
 }

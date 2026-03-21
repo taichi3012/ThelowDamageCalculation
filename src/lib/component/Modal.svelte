@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { blur, scale } from "svelte/transition";
+  import {blur, scale} from "svelte/transition";
 
   let show = false;
   let icon = "checked";

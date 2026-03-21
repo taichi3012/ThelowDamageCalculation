@@ -4,7 +4,7 @@
   import {onMount, tick} from "svelte";
   import {replaceState} from "$app/navigation";
 
-  let { data }: PageProps = $props();
+  let {data}: PageProps = $props();
   let params: Parameter | undefined = $state();
 
   onMount(async () => {
@@ -67,5 +67,5 @@
 </svelte:head>
 
 {#if params}
-  <App bind:params={params} />
+  <App bind:params={params}/>
 {/if}
