@@ -14,12 +14,12 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
-    "@resvg/resvg-js": "^2.6.2",
     "@sveltejs/adapter-vercel": "^6.3.3",
     "@sveltejs/kit": "^2.55.0",
     "@types/node": "^25.5.0",
-    "satori": "^0.26.0",
-    "satori-html": "^0.3.2",
+    "@types/react": "^19.2.14",
+    "@vercel/og": "^0.11.1",
+    "react": "^19.2.4",
     "svelte": "^5.54.1",
     "svelte-check": "^4.4.5",
     "thelow-damage-calculation": "file:..",
