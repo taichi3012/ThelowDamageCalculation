@@ -3,8 +3,8 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [ main ]
-    paths:
-      - "!for-vercel/**"
+    paths-ignore:
+      - for-vercel/**
 
 jobs:
   build:
