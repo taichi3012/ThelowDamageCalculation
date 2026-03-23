@@ -1,6 +1,7 @@
 name: Deploy Vercel
 
 on:
+  workflow_call:
   push:
     branches: [ main ]
     paths:
@@ -10,9 +11,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -29,19 +27,22 @@ jobs:
       - name: Prepack App UI
         run: npm run prepack
 
-      - name: Change current directory
-        run: cd ./for-vercel
-
       - name: Install dependencies
+        working-directory: for-vercel
         run: npm ci
 
       - name: Build
+        working-directory: for-vercel
         run: npm run build
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Deploy Project Artifacts to Vercel
+        working-directory: for-vercel
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
 concurrency:
