@@ -1,14 +1,14 @@
-name: GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+    paths:
+      - "!for-vercel/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -20,7 +20,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
@@ -36,8 +36,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -45,3 +43,7 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
