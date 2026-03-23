@@ -17,14 +17,12 @@
     }
   }
 
-  onMount(async () => {
-    document.body.style.transition = "none";
-    await tick();
+  onMount(() => {
     darkMode = localStorage.getItem("dark_mode") == "true";
     applyTheme();
-    await tick();
-    await tick();
-    document.body.style.transition = "";
+    setTimeout(() => {
+      document.body.style.transition = "color, background-color linear 1s";
+    }, 100);
   });
 </script>
 

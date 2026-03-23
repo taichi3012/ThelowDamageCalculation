@@ -14,7 +14,6 @@
 
 html,
 body {
-  transition: color, background-color linear 1s;
   color: var(--text-main);
   background-color: var(--bg-main);
   margin: 0;
