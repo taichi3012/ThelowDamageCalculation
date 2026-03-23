@@ -12,15 +12,21 @@ Thelow 非公式のダメージ計算器
 
 [Node.js](https://nodejs.org/ja/)から推奨版をインストールしてください.
 
-`package.json` が置いてある場所で,
+プロジェクトルートで、
 
 `npm install`
 
-を実行してください.
+`npm run prepack`
+
+でUIライブラリをビルドしてください。
+
+その後、このドキュメントがあるディレクトリで
+
+`npm install`
 
 `npm run dev`
 
-でライブサーバーが起動します.
+でライブサーバーが起動します。
 
 ## ライセンス表記
 
