@@ -59,7 +59,7 @@
     }
 
     if (params.dungeonDamageGain) {
-      urlParams.set("dd", MathUtil.toBaseIntString(Math.trunc(params.dungeonDamageGain), 62));
+      urlParams.set("dd", formatFractionalValues(params.dungeonDamageGain));
     }
 
     url.search = urlParams.toString();
