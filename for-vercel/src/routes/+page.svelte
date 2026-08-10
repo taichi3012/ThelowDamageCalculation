@@ -58,6 +58,10 @@
       urlParams.set("str", MathUtil.toBaseIntString(Math.trunc(params.strLevel), 62));
     }
 
+    if (params.dungeonDamageGain) {
+      urlParams.set("dd", MathUtil.toBaseIntString(Math.trunc(params.dungeonDamageGain), 62));
+    }
+
     url.search = urlParams.toString();
     replaceState(url, {});
   })

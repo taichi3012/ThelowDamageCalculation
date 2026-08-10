@@ -43,7 +43,7 @@ export const load: PageLoad = ({url}) => {
       "level_4.5": ((msFlg >> 4) & 1) == 1,
       level_5: ((msFlg >> 5) & 1) == 1,
     },
-    dungeonDamageGain: 0
+    dungeonDamageGain: urlParams.has("dd") ? parseFractionalValues(urlParams.get("dd")!) : 0
   };
 
   return {

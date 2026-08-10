@@ -53,6 +53,10 @@
       urlParams.set("str", params.strLevel.toString(36));
     }
 
+    if (params.dungeonDamageGain) {
+      urlParams.set("dd", formatToAlignedNum(params.dungeonDamageGain));
+    }
+
     url.search = urlParams.toString();
     replaceState(url, {});
   })
