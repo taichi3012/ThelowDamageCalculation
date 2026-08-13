@@ -13,12 +13,7 @@ export const load: PageLoad = ({url}) => {
     let val = MathUtil.parseBaseInt(arr[0], 62).toString();
 
     if (arr[1]) {
-      val += ".";
-      val += parseInt(
-        StringUtil.reverse(
-          MathUtil.parseBaseInt(arr[1], 62).toString()
-        )
-      );
+      val += "." + StringUtil.reverse(MathUtil.parseBaseInt(arr[1], 62).toString());
     }
 
     const result = parseFloat(val);
