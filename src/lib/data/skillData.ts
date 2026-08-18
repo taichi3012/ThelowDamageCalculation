@@ -96,6 +96,11 @@ export const SKILL_DATA: { [key: string]: SkillProp } = {
     multiply: 12.5,
     specialAttackAvailable: false,
   },
+  hisen: {
+    name: "飛閃",
+    multiply: 1.75,
+    specialAttackAvailable: true,
+  },
   awakening: {
     name: "覚醒",
     multiply: 2.0,
